@@ -1,0 +1,1365 @@
+for f in ACL.2???.summary
+do
+awk 'BEGIN{while(getline < "ACL_id" > 0) ACL[$1]=substr($2,5,1)}; NR == 1 {print "Anthology\t" $0; next}; $1 in ACL {print ACL[$1] "\t" $0}' $f > "$f"2
+done
+
+https://aclanthology.org/2016.jeptalnrecital-jep.22 203
+https://aclanthology.org/C16-1265 385               COLING
+https://aclanthology.org/D16-1242 269               EMNLP
+https://aclanthology.org/E17-1047 37                EACL
+https://aclanthology.org/I17-2046 1
+https://aclanthology.org/J17-1004 33            CL
+https://aclanthology.org/K16-2016 54            CONLL
+https://aclanthology.org/L16-1369 688           LREC
+https://aclanthology.org/N16-1004 206           NAACL
+https://aclanthology.org/O16-1034 10            ROCLING
+https://aclanthology.org/P16-1180 377           ACL
+https://aclanthology.org/Q16-1004 45            TACL
+https://aclanthology.org/R17-1049 1
+https://aclanthology.org/S16-1163 230           SemEval
+https://aclanthology.org/U16-1014 22
+https://aclanthology.org/W17-2313 1111          Workshp
+https://aclanthology.org/Y16-3016 38
+
+
+A2016 = read.table("to_go/with_key/ACL/ACL.2016.summary2.norm", header=T)
+A2017 = read.table("to_go/with_key/ACL/ACL.2017.summary2.norm", header=T)
+A2018 = read.table("to_go/with_key/ACL/ACL.2018.summary2.norm", header=T)
+A2019 = read.table("to_go/with_key/ACL/ACL.2019.summary2.norm", header=T)
+
+dd=30
+nrank = function(x) { rank(x)/length(x) }
+
+g2016 = glm(100*nrank(X2020) ~ Anthology2 + factor(pmin(dd, X2017)), data = A2016)
+g2017 = glm(100*nrank(X2021) ~ Anthology2 + factor(pmin(dd, X2018)), data = A2017)
+g2018 = glm(100*nrank(X2022) ~ Anthology2 + factor(pmin(dd, X2019)), data = A2018)
+g2019 = glm(100*nrank(X2023) ~ Anthology2 + factor(pmin(dd, X2020)), data = A2019)
+
+# g2016 = glm(100*nrank(X2020) ~ Anthology2 + factor(pmin(dd, X2017)) + poly(log(pmax(1, X2017)), 4), data = A2016)
+# g2017 = glm(100*nrank(X2021) ~ Anthology2 + factor(pmin(dd, X2018)) + poly(log(pmax(1, X2018)), 4), data = A2017)
+# g2018 = glm(100*nrank(X2022) ~ Anthology2 + factor(pmin(dd, X2019)) + poly(log(pmax(1, X2019)), 4), data = A2018)
+# g2019 = glm(100*nrank(X2023) ~ Anthology2 + factor(pmin(dd, X2020)) + poly(log(pmax(1, X2020)), 4), data = A2019)
+
+
+
+pdf("to_go/with_key/ACL/by_ACL_venue.pdf", pointsize=16)
+par(mfrow=c(2,2))
+
+o = order(sapply(split(-g2016$fitted.values, A2016$Anthology2), median))
+boxplot(split(g2016$fitted.values, A2016$Anthology2)[o], main="Published in 2016", ylab="Percentile in 2020", las=2)
+
+o = order(sapply(split(-g2017$fitted.values, A2017$Anthology2), median))
+boxplot(split(g2017$fitted.values, A2017$Anthology2)[o], main="Published in 2017", ylab="Percentile in 2021", las=2)
+
+o = order(sapply(split(-g2018$fitted.values, A2018$Anthology2), median))
+boxplot(split(g2018$fitted.values, A2018$Anthology2)[o], main="Published in 2018", ylab="Percentile in 2022", las=2)
+
+o = order(sapply(split(-g2019$fitted.values, A2019$Anthology2), median))
+boxplot(split(g2019$fitted.values, A2019$Anthology2)[o], main="Published in 2019", ylab="Percentile in 2023", las=2)
+dev.off()
+
+pdf("to_go/with_key/ACL/by_ACL_citations.pdf", pointsize=16)
+par(mfrow=c(2,2))
+boxplot(split(g2016$fitted.values, pmin(dd, A2016$X2017)), main="Published in 2016", ylab="Percentile in 2020", xlab="Citations in 2017", ylim=c(20,100))
+boxplot(split(g2017$fitted.values, pmin(dd, A2017$X2018)), main="Published in 2017", ylab="Percentile in 2021", xlab="Citations in 2018", ylim=c(20,100))
+boxplot(split(g2018$fitted.values, pmin(dd, A2018$X2019)), main="Published in 2018", ylab="Percentile in 2022", xlab="Citations in 2019", ylim=c(20,100))
+boxplot(split(g2019$fitted.values, pmin(dd, A2019$X2020)), main="Published in 2019", ylab="Percentile in 2023", xlab="Citations in 2020", ylim=c(20,100))
+dev.off()
+
+# A2017 = read.table("to_go/with_key/2017.summary", header=T)
+# g2017 = glm(nrank(X2021) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2017)), data = x2017)
+
+# A2018 = read.table("to_go/with_key/2018.summary", header=T)
+# g2018 = glm(nrank(X2022) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2018)), data = x2018)
+
+
+for f in ACL.201[6-9].summary2
+do
+awk -v f=$f 'BEGIN{ A1["C"] = "COLING";
+A1["D"] = "EMNLP"
+A1["E"] = "EACL"
+A1["I"] = "IJCNLP"
+A1["J"] = "CL"
+A1["K"] = "CONLL"
+A1["L"] = "LREC"
+A1["N"] = "NAACL"
+A1["O"] = "ROCLING"
+A1["P"] = "ACL"
+
+A1["Q"] = "TACL"
+A1["R"] = "RANLP"
+A1["S"] = "SemEval"
+A1["W"] = "Workshp"
+A1["Y"] = "PACLIC"
+while(getline < f > 0) x[$1]++}
+NR == 1 {print "Anthology2\t" $0; next}; 
+{key=$1; if(key ~ /[0-9]/ || x[key] < T) key="misc"};
+key in A1 {key=A1[key]}
+{print key "\t" $0}' T=40 $f > $f.norm
+done
+
+
+
+nrank = function(x) { rank(x)/length(x) }
+
+x2016 = read.table("to_go/with_key/2016.summary", header=T)
+x2017 = read.table("to_go/with_key/2017.summary", header=T)
+x2018 = read.table("to_go/with_key/2018.summary", header=T)
+x2019 = read.table("to_go/with_key/2019.summary", header=T)
+
+P2016 = read.table("to_go/with_key/PubMed.2016.summary2", header=T, sep="\t")
+P2017 = read.table("to_go/with_key/PubMed.2017.summary2", header=T, sep="\t")
+# x2018 = read.table("to_go/with_key/2018.summary2", header=T, sep="\t")
+# x2019 = read.table("to_go/with_key/2019.summary2", header=T, sep="\t")
+
+
+
+g2016 = glm(100*nrank(X2020) ~ Anthology2 + factor(pmin(dd, X2017)), data = A2016)
+g2017 = glm(100*nrank(X2021) ~ Anthology2 + factor(pmin(dd, X2018)), data = A2017)
+g2018 = glm(100*nrank(X2022) ~ Anthology2 + factor(pmin(dd, X2019)), data = A2018)
+g2019 = glm(100*nrank(X2023) ~ Anthology2 + factor(pmin(dd, X2020)), data = A2019)
+
+d1 = sum(x2016$ACL)
+d2 = sum(x2016$PubMed)
+d3 = sum(x2016$ArXiv)
+
+d5 = sum(x2016$DBLP)
+d6 = sum(x2016$DOI)
+d7 = sum(x2016$MAG)
+
+w = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3 + x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7
+
+dd=10
+g2016.2 = glm(100*nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2016, weights = w)
+
+
+d1 = sum(x2017$ACL)
+d2 = sum(x2017$PubMed)
+d3 = sum(x2017$ArXiv)
+
+d5 = sum(x2017$DBLP)
+d6 = sum(x2017$DOI)
+d7 = sum(x2017$MAG)
+
+w = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3 + x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7
+
+dd=10
+g2017.2 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2017, weights = w)
+
+
+
+d1 = sum(x2018$ACL)
+d2 = sum(x2018$PubMed)
+d3 = sum(x2018$ArXiv)
+
+d5 = sum(x2018$DBLP)
+d6 = sum(x2018$DOI)
+d7 = sum(x2018$MAG)
+
+w = x2018$ACL/d1 + x2018$PubMed/d2 + x2018$ArXiv/d3 + x2018$DBLP/d5 + x2018$DOI/d6 + x2018$MAG/d7
+
+dd=10
+g2018.2 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2018, weights = w)
+
+
+d1 = sum(x2019$ACL)
+d2 = sum(x2019$PubMed)
+d3 = sum(x2019$ArXiv)
+
+d5 = sum(x2019$DBLP)
+d6 = sum(x2019$DOI)
+d7 = sum(x2019$MAG)
+
+w = x2019$ACL/d1 + x2019$PubMed/d2 + x2019$ArXiv/d3 + x2019$DBLP/d5 + x2019$DOI/d6 + x2019$MAG/d7
+
+dd=10
+g2019.2 = glm(100*nrank(X2023) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2020)), data = x2019, weights = w)
+
+
+jpeg("to_go/with_key/ACL/by_all_citations.jpg", pointsize=42, quality=100, width=480*3, height=480*3)
+par(mfrow=c(2,2))
+boxplot(split(g2016.2$fitted.values, pmin(dd, x2016$X2017)), main="Published in 2016", ylab="Percentile in 2020", xlab="Citations in 2017", ylim=c(20,115), pch='.')
+boxplot(split(g2017.2$fitted.values, pmin(dd, x2017$X2018)), main="Published in 2017", ylab="Percentile in 2021", xlab="Citations in 2018", ylim=c(20,115), pch='.')
+boxplot(split(g2018.2$fitted.values, pmin(dd, x2018$X2019)), main="Published in 2018", ylab="Percentile in 2022", xlab="Citations in 2019", ylim=c(20,115), pch='.')
+boxplot(split(g2019.2$fitted.values, pmin(dd, x2019$X2020)), main="Published in 2019", ylab="Percentile in 2023", xlab="Citations in 2020", ylim=c(20,115), pch='.')
+dev.off()
+
+pdf("to_go/with_key/ACL/by_all_venue.pdf", pointsize=16)
+par(mfrow=c(2,2))
+
+boxplot(g2016.2$fitted.values[x2016$PubMed > 0],
+g2016.2$fitted.values[x2016$DOI > 0],
+g2016.2$fitted.values[x2016$ArXiv > 0],
+g2016.2$fitted.values[x2016$ACL > 0],
+g2016.2$fitted.values[x2016$DBLP > 0],
+names=c("PubMed", "DOI", "ArXiv", "ACL", "DBLP"), las=2, main="Published in 2016", ylab="Percentile in 2020", ylim=c(20,115))
+
+boxplot(g2017.2$fitted.values[x2017$PubMed > 0],
+g2017.2$fitted.values[x2017$DOI > 0],
+g2017.2$fitted.values[x2017$ArXiv > 0],
+g2017.2$fitted.values[x2017$ACL > 0],
+g2017.2$fitted.values[x2017$DBLP > 0],
+names=c("PubMed", "DOI", "ArXiv", "ACL", "DBLP"), las=2, main="Published in 2017", ylab="Percentile in 2021", ylim=c(20,115))
+
+boxplot(g2018.2$fitted.values[x2018$PubMed > 0],
+g2018.2$fitted.values[x2018$DOI > 0],
+g2018.2$fitted.values[x2018$ArXiv > 0],
+g2018.2$fitted.values[x2018$ACL > 0],
+g2018.2$fitted.values[x2018$DBLP > 0],
+names=c("PubMed", "DOI", "ArXiv", "ACL", "DBLP"), las=2, main="Published in 2018", ylab="Percentile in 2022", ylim=c(20,115))
+
+boxplot(g2019.2$fitted.values[x2019$PubMed > 0],
+g2019.2$fitted.values[x2019$DOI > 0],
+g2019.2$fitted.values[x2019$ArXiv > 0],
+g2019.2$fitted.values[x2019$ACL > 0],
+g2019.2$fitted.values[x2019$DBLP > 0],
+names=c("PubMed", "DOI", "ArXiv", "ACL", "DBLP"), las=2, main="Published in 2019", ylab="Percentile in 2023", ylim=c(20,115))
+dev.off()
+
+m = cbind( g2016.2$coef,  g2017.2$coef, g2018.2$coef, g2019.2$coef)
+m[c("PubMed", "DOI", "ArXiv", "ACL", "DBLP"),]
+
+
+mm = cbind( g2016$coef,  g2017$coef, g2018$coef, g2019$coef)
+
+
+ &  2016&2017&2018&2019&2020&2021&2022&2023&2024 \\ \hline
+2016& 1.00& 0.80& 0.66& 0.56& 0.51& 0.47& 0.44 &0.40& 0.36  \\
+2017& 0.80& 1.00& 0.92& 0.85& 0.81& 0.75& 0.70& 0.64& 0.58 \\
+2018& 0.66& 0.92 &1.00 &0.98 &0.94 &0.88 &0.82 &0.76 &0.69 \\
+2019 &0.56 &0.85 &0.98& 1.00& 0.98& 0.93& 0.88& 0.82& 0.75 \\
+2020& 0.51& 0.81& 0.94& 0.98& 1.00& 0.98& 0.95& 0.90& 0.85 \\
+2021& 0.47& 0.75& 0.88& 0.93& 0.98& 1.00& 0.99& 0.97& 0.93 \\
+2022& 0.44& 0.70& 0.82& 0.88& 0.95& 0.99& 1.00& 0.99& 0.96 \\
+2023& 0.40& 0.64& 0.76& 0.82& 0.90& 0.97& 0.99& 1.00& 0.99 \\
+2024& 0.36& 0.58& 0.69& 0.75& 0.85& 0.93& 0.96& 0.99& 1.00 \\
+
+
+
+x2016$N2020 = nrank(x2016$X2016)
+x2016$P2020 = 100*nrank(x2016$X2016)
+
+x2016$Cum2016 = x2016$X2016
+x2016$Cum2017 = x2016$X2017 + x2016$Cum2016
+x2016$Cum2018 = x2016$X2018 + x2016$Cum2017
+x2016$Cum2019 = x2016$X2019 + x2016$Cum2018
+x2016$Cum2020 = x2016$X2020 + x2016$Cum2019
+
+Hindex = function(cites) { x = sort(cites, decreasing=T); sum(x >= (1:length(x)))} 
+
+par(mfrow=c(1,1))
+boxplot(x2016$P2020[x2016$X2017 > 1], 
+x2016$P2020[x2016$X2017 > 2], 
+x2016$P2020[x2016$X2017 > 3], 
+x2016$P2020[x2016$PubMed > 0], 
+x2016$P2020[x2016$ACL > 0], 
+x2016$P2020[x2016$ArXiv > 0], 
+x2016$P2020[x2016$DBLP > 0],
+names=c("1+ citations", "2+ citations", "3+ citations", "PubMed", "ACL", "ArXiv", "DBLP"), las=2)
+
+
+names(Cum.m) = c("all", "0", "1+", "2+", "3+", "PubMed", "ACL", "ArXiv", "DBLP")
+
+m = c(Hindex(x2016$X2020),
+Hindex(x2016$X2020[x2016$X2017 == 0]),
+Hindex(x2016$X2020[x2016$X2017 > 1]),
+Hindex(x2016$X2020[x2016$X2017 > 2]),
+Hindex(x2016$X2020[x2016$X2017 > 3]),
+Hindex(x2016$X2020[x2016$PubMed > 0]),
+Hindex(x2016$X2020[x2016$ACL > 0]),
+Hindex(x2016$X2020[x2016$ArXiv > 0]),
+Hindex(x2016$X2020[x2016$DBLP > 0]))
+
+names(m) = c("all", "0", "1+", "2+", "3+", "PubMed", "ACL", "ArXiv", "DBLP")
+
+Cum.m1 = c(Hindex(x2016$Cum2020),
+Hindex(x2016$Cum2020[x2016$X2016 == 0]),
+Hindex(x2016$Cum2020[x2016$X2016 > 1]),
+Hindex(x2016$Cum2020[x2016$X2016 > 2]),
+Hindex(x2016$Cum2020[x2016$X2016 > 3]),
+Hindex(x2016$Cum2020[x2016$PubMed > 0]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0]),
+Hindex(x2016$Cum2020[x2016$ACL > 0]),
+
+Hindex(x2016$Cum2020[x2016$PubMed > 0 & x2016$X2016 > 1]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0 & x2016$X2016 > 1]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0 & x2016$X2016 > 1]),
+Hindex(x2016$Cum2020[x2016$ACL > 0 & x2016$X2016 > 1]))
+
+Cum.m2 = c(Hindex(x2016$Cum2020),
+Hindex(x2016$Cum2020[x2016$X2017 == 0]),
+Hindex(x2016$Cum2020[x2016$X2017 > 1]),
+Hindex(x2016$Cum2020[x2016$X2017 > 2]),
+Hindex(x2016$Cum2020[x2016$X2017 > 3]),
+Hindex(x2016$Cum2020[x2016$PubMed > 0]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0]),
+Hindex(x2016$Cum2020[x2016$ACL > 0]),
+
+Hindex(x2016$Cum2020[x2016$PubMed > 0 & x2016$X2017 > 1]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0 & x2016$X2017 > 1]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0 & x2016$X2017 > 1]),
+Hindex(x2016$Cum2020[x2016$ACL > 0 & x2016$X2017 > 1]))
+
+
+Cum.m3 = c(Hindex(x2016$Cum2020),
+Hindex(x2016$Cum2020[x2016$X2018 == 0]),
+Hindex(x2016$Cum2020[x2016$X2018 > 1]),
+Hindex(x2016$Cum2020[x2016$X2018 > 2]),
+Hindex(x2016$Cum2020[x2016$X2018 > 3]),
+Hindex(x2016$Cum2020[x2016$PubMed > 0]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0]),
+Hindex(x2016$Cum2020[x2016$ACL > 0]),
+
+Hindex(x2016$Cum2020[x2016$PubMed > 0 & x2016$X2018 > 1]),
+Hindex(x2016$Cum2020[x2016$ArXiv > 0 & x2016$X2018 > 1]),
+Hindex(x2016$Cum2020[x2016$DBLP > 0 & x2016$X2018 > 1]),
+Hindex(x2016$Cum2020[x2016$ACL > 0 & x2016$X2018 > 1]))
+
+N1 = c(length(x2016$Cum2020),
+sum(x2016$Cum2016 == 0),
+sum(x2016$Cum2016 > 1),
+sum(x2016$Cum2016 > 2),
+sum(x2016$Cum2016 > 3),
+sum(x2016$PubMed > 0),
+sum(x2016$ArXiv > 0),
+sum(x2016$DBLP > 0),
+sum(x2016$ACL > 0),
+
+sum(x2016$PubMed > 0 & x2016$Cum2016 > 1),
+sum(x2016$ArXiv > 0 & x2016$Cum2016 > 1),
+sum(x2016$DBLP > 0 & x2016$Cum2016 > 1),
+sum(x2016$ACL > 0 & x2016$Cum2016 > 1))
+
+N2 = c(length(x2016$Cum2020),
+sum(x2016$Cum2017 == 0),
+sum(x2016$Cum2017 > 1),
+sum(x2016$Cum2017 > 2),
+sum(x2016$Cum2017 > 3),
+sum(x2016$PubMed > 0),
+sum(x2016$ArXiv > 0),
+sum(x2016$DBLP > 0),
+sum(x2016$ACL > 0),
+
+sum(x2016$PubMed > 0 & x2016$Cum2017 > 1),
+sum(x2016$ArXiv > 0 & x2016$Cum2017 > 1),
+sum(x2016$DBLP > 0 & x2016$Cum2017 > 1),
+sum(x2016$ACL > 0 & x2016$Cum2017 > 1))
+
+N3 = c(length(x2016$Cum2020),
+sum(x2016$Cum2018 == 0),
+sum(x2016$Cum2018 > 1),
+sum(x2016$Cum2018 > 2),
+sum(x2016$Cum2018 > 3),
+sum(x2016$PubMed > 0),
+sum(x2016$ArXiv > 0),
+sum(x2016$DBLP > 0),
+sum(x2016$ACL > 0),
+
+sum(x2016$PubMed > 0 & x2016$Cum2018 > 1),
+sum(x2016$ArXiv > 0 & x2016$Cum2018 > 1),
+sum(x2016$DBLP > 0 & x2016$Cum2018 > 1),
+sum(x2016$ACL > 0 & x2016$Cum2018 > 1))
+
+
+m = cbind(Cum.m1, Cum.m2, Cum.m3, N1, N2, N3)
+dimnames(m)[[1]] = c("all", "0", "1+", "2+", "3+", "PubMed", "ArXiv", "DBLP", "ACL", "1+ PubMed", "1+ ArXiv", "1+ DBLP", "1+ ACL")
+dimnames(m)[[2]] = c("Year1", "Year2", "Year3", "N.Year1", "N.Year2", "N.Year3" )
+o = order(-m[,2])
+m[o,]
+m2016 = m
+
+table(paste(x2016$ACL, x2016$ArXiv, x2016$PubMed, x2016$DBLP))
+
+
+
+x2017$Cum2017 = x2017$X2017
+x2017$Cum2018 = x2017$X2018 + x2017$Cum2017
+x2017$Cum2019 = x2017$X2019 + x2017$Cum2018
+x2017$Cum2020 = x2017$X2020 + x2017$Cum2019
+x2017$Cum2021 = x2017$X2021 + x2017$Cum2020
+
+
+Cum.m1 = c(Hindex(x2017$Cum2021),
+Hindex(x2017$Cum2021[x2017$X2017 == 0]),
+Hindex(x2017$Cum2021[x2017$X2017 > 1]),
+Hindex(x2017$Cum2021[x2017$X2017 > 2]),
+Hindex(x2017$Cum2021[x2017$X2017 > 3]),
+Hindex(x2017$Cum2021[x2017$PubMed > 0]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0]),
+Hindex(x2017$Cum2021[x2017$ACL > 0]),
+
+Hindex(x2017$Cum2021[x2017$PubMed > 0 & x2017$X2017 > 1]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0 & x2017$X2017 > 1]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0 & x2017$X2017 > 1]),
+Hindex(x2017$Cum2021[x2017$ACL > 0 & x2017$X2017 > 1]))
+
+
+Cum.m2 = c(Hindex(x2017$Cum2021),
+Hindex(x2017$Cum2021[x2017$X2018 == 0]),
+Hindex(x2017$Cum2021[x2017$X2018 > 1]),
+Hindex(x2017$Cum2021[x2017$X2018 > 2]),
+Hindex(x2017$Cum2021[x2017$X2018 > 3]),
+Hindex(x2017$Cum2021[x2017$PubMed > 0]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0]),
+Hindex(x2017$Cum2021[x2017$ACL > 0]),
+
+Hindex(x2017$Cum2021[x2017$PubMed > 0 & x2017$X2018 > 1]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0 & x2017$X2018 > 1]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0 & x2017$X2018 > 1]),
+Hindex(x2017$Cum2021[x2017$ACL > 0 & x2017$X2018 > 1]))
+
+Cum.m3 = c(Hindex(x2017$Cum2021),
+Hindex(x2017$Cum2021[x2017$X2019 == 0]),
+Hindex(x2017$Cum2021[x2017$X2019 > 1]),
+Hindex(x2017$Cum2021[x2017$X2019 > 2]),
+Hindex(x2017$Cum2021[x2017$X2019 > 3]),
+Hindex(x2017$Cum2021[x2017$PubMed > 0]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0]),
+Hindex(x2017$Cum2021[x2017$ACL > 0]),
+
+Hindex(x2017$Cum2021[x2017$PubMed > 0 & x2017$X2019 > 1]),
+Hindex(x2017$Cum2021[x2017$ArXiv > 0 & x2017$X2019 > 1]),
+Hindex(x2017$Cum2021[x2017$DBLP > 0 & x2017$X2019 > 1]),
+Hindex(x2017$Cum2021[x2017$ACL > 0 & x2017$X2019 > 1]))
+
+
+N1 = c(length(x2017$Cum2021),
+sum(x2017$Cum2017 == 0),
+sum(x2017$Cum2017 > 1),
+sum(x2017$Cum2017 > 2),
+sum(x2017$Cum2017 > 3),
+sum(x2017$PubMed > 0),
+sum(x2017$ArXiv > 0),
+sum(x2017$DBLP > 0),
+sum(x2017$ACL > 0),
+
+sum(x2017$PubMed > 0 & x2017$Cum2017 > 1),
+sum(x2017$ArXiv > 0 & x2017$Cum2017 > 1),
+sum(x2017$DBLP > 0 & x2017$Cum2017 > 1),
+sum(x2017$ACL > 0 & x2017$Cum2017 > 1))
+
+
+N2 = c(length(x2017$Cum2021),
+sum(x2017$Cum2018 == 0),
+sum(x2017$Cum2018 > 1),
+sum(x2017$Cum2018 > 2),
+sum(x2017$Cum2018 > 3),
+sum(x2017$PubMed > 0),
+sum(x2017$ArXiv > 0),
+sum(x2017$DBLP > 0),
+sum(x2017$ACL > 0),
+
+sum(x2017$PubMed > 0 & x2017$Cum2018 > 1),
+sum(x2017$ArXiv > 0 & x2017$Cum2018 > 1),
+sum(x2017$DBLP > 0 & x2017$Cum2018 > 1),
+sum(x2017$ACL > 0 & x2017$Cum2018 > 1))
+
+N3 = c(length(x2017$Cum2021),
+sum(x2017$Cum2019 == 0),
+sum(x2017$Cum2019 > 1),
+sum(x2017$Cum2019 > 2),
+sum(x2017$Cum2019 > 3),
+sum(x2017$PubMed > 0),
+sum(x2017$ArXiv > 0),
+sum(x2017$DBLP > 0),
+sum(x2017$ACL > 0),
+
+sum(x2017$PubMed > 0 & x2017$Cum2019 > 1),
+sum(x2017$ArXiv > 0 & x2017$Cum2019 > 1),
+sum(x2017$DBLP > 0 & x2017$Cum2019 > 1),
+sum(x2017$ACL > 0 & x2017$Cum2019 > 1))
+
+mm = cbind(Cum.m1, Cum.m2, Cum.m3, N1, N2, N3)
+colnames = c("all", "0", "1+", "2+", "3+", "PubMed", "ArXiv", "DBLP", "ACL", "1+ PubMed", "1+ ArXiv", "1+ DBLP", "1+ ACL")
+dimnames(mm)[[1]] = colnames
+dimnames(mm)[[2]] = c("Year1", "Year2", "Year3", "N.Year1", "N.Year2", "N.Year3" )
+o = order(-mm[,2])
+mm[o,]
+m2017=mm
+
+
+A2016$Cum2016 = A2016$X2016
+A2016$Cum2017 = A2016$X2017 + A2016$Cum2016
+A2016$Cum2018 = A2016$X2018 + A2016$Cum2017
+A2016$Cum2019 = A2016$X2019 + A2016$Cum2018
+A2016$Cum2020 = A2016$X2020 + A2016$Cum2019
+
+Cum.m1 = c(Hindex(A2016$Cum2020),
+Hindex(A2016$Cum2020[A2016$X2017 == 0]),
+Hindex(A2016$Cum2020[A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$X2017 > 2]),
+Hindex(A2016$Cum2020[A2016$X2017 > 3]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp"]),
+
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval" & A2016$X2017 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp" & A2016$X2017 > 1]))
+
+
+Cum.m2 = c(Hindex(A2016$Cum2020),
+Hindex(A2016$Cum2020[A2016$X2018 == 0]),
+Hindex(A2016$Cum2020[A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$X2018 > 2]),
+Hindex(A2016$Cum2020[A2016$X2018 > 3]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp"]),
+
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval" & A2016$X2018 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp"  & A2016$X2018 > 1]))
+
+Cum.m3 = c(Hindex(A2016$Cum2020),
+Hindex(A2016$Cum2020[A2016$X2019 == 0]),
+Hindex(A2016$Cum2020[A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$X2019 > 2]),
+Hindex(A2016$Cum2020[A2016$X2019 > 3]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval"]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp"]),
+
+Hindex(A2016$Cum2020[A2016$Anthology2 == "ACL" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "EMNLP" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "NAACL" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "TACL" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "COLING" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "SemEval" & A2016$X2019 > 1]),
+Hindex(A2016$Cum2020[A2016$Anthology2 == "Workshp" & A2016$X2019 > 1]))
+
+N1 = c(length(A2016$Cum2020),
+sum(A2016$Cum2017 == 0),
+sum(A2016$Cum2017 > 1),
+sum(A2016$Cum2017 > 2),
+sum(A2016$Cum2017 > 3),
+
+sum(A2016$Anthology2 == "ACL"),
+sum(A2016$Anthology2 == "EMNLP"),
+sum(A2016$Anthology2 == "NAACL"),
+sum(A2016$Anthology2 == "TACL"),
+sum(A2016$Anthology2 == "COLING"),
+sum(A2016$Anthology2 == "SemEval"),
+sum(A2016$Anthology2 == "Workshp"),
+
+sum(A2016$Anthology2 == "ACL" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "EMNLP" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "NAACL" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "TACL" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "COLING" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "SemEval" & A2016$Cum2017 > 1),
+sum(A2016$Anthology2 == "Workshp" & A2016$Cum2017 > 1))
+
+
+N2 = c(length(A2016$Cum2020),
+sum(A2016$Cum2018 == 0),
+sum(A2016$Cum2018 > 1),
+sum(A2016$Cum2018 > 2),
+sum(A2016$Cum2018 > 3),
+sum(A2016$Anthology2 == "ACL"),
+sum(A2016$Anthology2 == "EMNLP"),
+sum(A2016$Anthology2 == "NAACL"),
+sum(A2016$Anthology2 == "TACL"),
+sum(A2016$Anthology2 == "COLING"),
+sum(A2016$Anthology2 == "SemEval"),
+sum(A2016$Anthology2 == "Workshp"),
+
+sum(A2016$Anthology2 == "ACL" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "EMNLP" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "NAACL" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "TACL" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "COLING" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "SemEval" & A2016$Cum2018 > 1),
+sum(A2016$Anthology2 == "Workshp" & A2016$Cum2018 > 1))
+
+N3 = c(length(A2016$Cum2020),
+sum(A2016$Cum2019 == 0),
+sum(A2016$Cum2019 > 1),
+sum(A2016$Cum2019 > 2),
+sum(A2016$Cum2019 > 3),
+sum(A2016$Anthology2 == "ACL"),
+sum(A2016$Anthology2 == "EMNLP"),
+sum(A2016$Anthology2 == "NAACL"),
+sum(A2016$Anthology2 == "TACL"),
+sum(A2016$Anthology2 == "COLING"),
+sum(A2016$Anthology2 == "SemEval"),
+sum(A2016$Anthology2 == "Workshp"),
+
+sum(A2016$Anthology2 == "ACL" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "EMNLP" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "NAACL" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "TACL" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "COLING" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "SemEval" & A2016$Cum2019 > 1),
+sum(A2016$Anthology2 == "Workshp" & A2016$Cum2019 > 1))
+
+
+mm = cbind(Cum.m1, Cum.m2, Cum.m3, N1, N2, N3)
+colnames = c("all", "0", "1+", "2+", "3+", "ACL.Main", "EMNLP", "NAACL", "TACL", "COLING", "SemEval", "Workshop", "1+ ACL.Main", "1+ EMNLP", "1+ NAACL", "1+ TACL", "1+ COLING", "1+ SemEval", "1+ Workshop")
+dimnames(mm)[[1]] = colnames
+dimnames(mm)[[2]] = c("Year1", "Year2", "Year3", "N.Year1", "N.Year2", "N.Year3" )
+o = order(-mm[,2])
+mm[o,]
+
+A2017$Cum2017 = A2017$X2017
+A2017$Cum2018 = A2017$X2018 + A2017$Cum2017
+A2017$Cum2019 = A2017$X2019 + A2017$Cum2018
+A2017$Cum2020 = A2017$X2020 + A2017$Cum2019
+A2017$Cum2021 = A2017$X2021 + A2017$Cum2020
+
+
+Cum.m1 = c(Hindex(A2017$Cum2021),
+Hindex(A2017$Cum2021[A2017$X2017 == 0]),
+Hindex(A2017$Cum2021[A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$X2017 > 2]),
+Hindex(A2017$Cum2021[A2017$X2017 > 3]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp"]),
+
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp" & A2017$X2017 > 1]))
+
+
+Cum.m2 = c(Hindex(A2017$Cum2021),
+Hindex(A2017$Cum2021[A2017$X2018 == 0]),
+Hindex(A2017$Cum2021[A2017$X2018 > 1]),
+Hindex(A2017$Cum2021[A2017$X2018 > 2]),
+Hindex(A2017$Cum2021[A2017$X2018 > 3]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp"]),
+
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval" & A2017$X2017 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp" & A2017$X2017 > 1]))
+
+Cum.m3 = c(Hindex(A2017$Cum2021),
+Hindex(A2017$Cum2021[A2017$X2019 == 0]),
+Hindex(A2017$Cum2021[A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$X2019 > 2]),
+Hindex(A2017$Cum2021[A2017$X2019 > 3]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval"]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp"]),
+
+Hindex(A2017$Cum2021[A2017$Anthology2 == "ACL" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EMNLP" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "EACL" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "TACL" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "COLING" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "SemEval" & A2017$X2019 > 1]),
+Hindex(A2017$Cum2021[A2017$Anthology2 == "Workshp" & A2017$X2019 > 1]))
+
+N1 = c(length(A2017$Cum2021),
+sum(A2017$Cum2017 == 0),
+sum(A2017$Cum2017 > 1),
+sum(A2017$Cum2017 > 2),
+sum(A2017$Cum2017 > 3),
+sum(A2017$Anthology2 == "ACL"),
+sum(A2017$Anthology2 == "EMNLP"),
+sum(A2017$Anthology2 == "EACL"),
+sum(A2017$Anthology2 == "TACL"),
+sum(A2017$Anthology2 == "COLING"),
+sum(A2017$Anthology2 == "SemEval"),
+sum(A2017$Anthology2 == "Workshp"),
+
+sum(A2017$Anthology2 == "ACL" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "EMNLP" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "EACL" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "TACL" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "COLING" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "SemEval" & A2017$X2019 > 1),
+sum(A2017$Anthology2 == "Workshp" & A2017$X2019 > 1))
+
+
+N2 = c(length(A2017$Cum2021),
+sum(A2017$Cum2018 == 0),
+sum(A2017$Cum2018 > 1),
+sum(A2017$Cum2018 > 2),
+sum(A2017$Cum2018 > 3),
+sum(A2017$Anthology2 == "ACL"),
+sum(A2017$Anthology2 == "EMNLP"),
+sum(A2017$Anthology2 == "EACL"),
+sum(A2017$Anthology2 == "TACL"),
+sum(A2017$Anthology2 == "COLING"),
+sum(A2017$Anthology2 == "SemEval"),
+sum(A2017$Anthology2 == "Workshp"),
+
+sum(A2017$Anthology2 == "ACL" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "EMNLP" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "EACL" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "TACL" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "COLING" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "SemEval" & A2017$Cum2018 > 1),
+sum(A2017$Anthology2 == "Workshp" & A2017$Cum2018 > 1))
+
+N3 = c(length(A2017$Cum2021),
+sum(A2017$Cum2019 == 0),
+sum(A2017$Cum2019 > 1),
+sum(A2017$Cum2019 > 2),
+sum(A2017$Cum2019 > 3),
+sum(A2017$Anthology2 == "ACL"),
+sum(A2017$Anthology2 == "EMNLP"),
+sum(A2017$Anthology2 == "EACL"),
+sum(A2017$Anthology2 == "TACL"),
+sum(A2017$Anthology2 == "COLING"),
+sum(A2017$Anthology2 == "SemEval"),
+sum(A2017$Anthology2 == "Workshp"),
+
+sum(A2017$Anthology2 == "ACL" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "EMNLP" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "EACL" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "TACL" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "COLING" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "SemEval" & A2017$Cum2019 > 1),
+sum(A2017$Anthology2 == "Workshp" & A2017$Cum2019 > 1))
+
+mm = cbind(Cum.m1, Cum.m2, Cum.m3, N1, N2, N3)
+colnames = c("all", "0", "1+", "2+", "3+", 
+"ACL.Main", "EMNLP", "EACL", "TACL", "COLING", "SemEval", "Workshop",
+"1+ ACL.Main", "1+ EMNLP", "1+ EACL", "1+ TACL", "1+ COLING", "1+ SemEval", "1+ Workshop")
+dimnames(mm)[[1]] = colnames
+dimnames(mm)[[2]] = c("Year1", "Year2", "Year3", "N.Year1", "N.Year2", "N.Year3" )
+o = order(-mm[,2])
+mm[o,]
+
+
+cor(x2016[,2:10])
+Corrleations of 1,026,798 PubMed Papers Published in 2016
+
+2016 & 1.00 & 0.77 & 0.64 & 0.55 & 0.50 & 0.45 & 0.40 & 0.35 \\
+2017 & 0.77 & 1.00 & 0.90 & 0.82 & 0.75 & 0.68 & 0.61 & 0.54 \\
+2018 & 0.64 & 0.90 & 1.00 & 0.94 & 0.89 & 0.83 & 0.76 & 0.69 \\
+2019 & 0.55 & 0.82 & 0.94 & 1.00 & 0.94 & 0.90 & 0.84 & 0.78 \\
+2020 & 0.50 & 0.75 & 0.89 & 0.94 & 1.00 & 0.95 & 0.91 & 0.86 \\
+2021 & 0.45 & 0.68 & 0.83 & 0.90 & 0.95 & 1.00 & 0.96 & 0.93 \\
+2022 & 0.40 & 0.61 & 0.76 & 0.84 & 0.91 & 0.96 & 1.00 & 0.97 \\
+2023 & 0.35 & 0.54 & 0.69 & 0.78 & 0.86 & 0.93 & 0.97 & 1.00 \\
+
+Published in 2016
+
+                X2016   X2017  X2018  X2019  X2020   X2021   X2022   X2023
+ACL &           0.0086 & 0.0109 & 0.016 & 0.015 & 0.012 & 0.0096 & 0.0087 & 0.0067 \\
+ArXiv   &        0.0255 & 0.0088 & 0.024 & 0.021 & 0.014 & 0.0110 & 0.0132 & 0.0142 \\
+PubMed   &     -0.0212 & -0.0012 & -0.014 & -0.013 & -0.007 & -0.0042 & -0.0073 & -0.0081 \\
+
+Published in 2016
+
+zzz = cor(cbind(A2016$Anthology2 == "ACL", 
+A2016$Anthology2 == "EMNLP", 
+A2016$Anthology2 == "TACL", 
+A2016$Anthology2 == "SemEval", 
+A2016$Anthology2 == "Workshp"), A2016[,4:11])
+
+dimnames(zzz)[[1]] = c("ACL Conf", "EMNLP", "TACL", "SemEval", "Wrokshop")
+dimnames(zzz)[[2]] = paste(2016:2023)
+
+xxx = cor(A2016[,4:11])
+dimnames(xxx)[[1]] = paste(2016:2023)
+dimnames(xxx)[[2]] = paste(2016:2023)
+
+pdf("to_go/with_key/ACL/cor_by_year_and_venue.pdf", pointsize=16)
+par(mfrow=c(1,2))
+boxplot(xxx, ylim=c(-0.1, 1), las=2, ylab="Correlation", main="Large Correlations")
+boxplot(t(zzz), ylim=c(-0.1,1), las=2, ylab="Correlation", main="Small Correlations")
+dev.off()
+
+
+      X2016  X2017  X2018  X2019  X2020  X2021  X2022  X2023
+ACL Main &  0.140 &  0.136 &  0.096 &  0.068 &  0.050 &  0.035 &  0.025 &  0.018 \\
+EMNLP&  0.031 &  0.116 &  0.103 &  0.084 &  0.075 &  0.068 &  0.060 &  0.050 & \\
+TACL &  0.069 &  0.111 &  0.130 &  0.120 &  0.114 &  0.099 &  0.080 &  0.073 \\
+SemEval &  0.036 & -0.005 & -0.026 & -0.024 & -0.023 & -0.018 & -0.014 & -0.012 \\
+Workshops&  -0.110 & -0.104 & -0.094 & -0.077 & -0.067 & -0.060 & -0.053 & -0.046 \\
+
+
+> m2016
+          Year1 Year2 Year3 N.Year1 N.Year2 N.Year3
+all         698   698   698 1121081 1121081 1121081
+0           257    61    46  663784  235233  110402
+1+          685   698   698  235710  681325  872213
+2+          675   698   698  137703  532063  757374
+3+          666   698   698   87239  420887  659269
+PubMed      623   623   623 1026798 1026798 1026798
+ArXiv       439   439   439  101176  101176  101176
+DBLP        442   442   442   46191   46191   46191
+ACL         151   151   151    3710    3710    3710
+1+ PubMed   613   623   623  212292  625193  801175
+1+ ArXiv    418   439   439   25627   61672   77621
+1+ DBLP     413   442   442   11457   29179   36749
+1+ ACL      145   151   151     939    2340    2938
+
+Published in 2017
+
+> m2017
+          Year1 Year2 Year3 N.Year1 N.Year2 N.Year3
+all         737   737   737 1179152 1179152 1179152
+0           273    63    47  689333  235242   98524
+1+          727   737   737  255468  728443  942275
+2+          714   736   737  150803  569512  824298
+3+          705   736   737   96655  450951  722678
+PubMed      666   666   666 1077437 1077437 1077437
+ArXiv       478   478   478  110184  110184  110184
+DBLP        477   477   477   53403   53403   53403
+ACL         145   145   145    3030    3030    3030
+1+ PubMed   659   666   666  228958  664900  863624
+1+ ArXiv    467   478   478   29314   70242   86578
+1+ DBLP     462   477   477   14130   35701   43952
+1+ ACL      136   145   145     808    2111    2519
+
+
+ACL
+
+Published in 2016
+
+            Year1 Year2 Year3 N.Year1 N.Year2 N.Year3
+all           151   151   151    3710    3710    3710
+0              16    12    12     691     304     170
+1+            151   151   151    2340    2938    3163
+2+            151   151   151    1856    2526    2828
+3+            151   151   151    1518    2160    2518
+ACL.Main       79    79    79     377     377     377
+EMNLP          75    75    75     269     269     269
+NAACL          55    55    55     206     206     206
+TACL           28    28    28      45      45      45
+COLING         45    45    45     385     385     385
+SemEval        35    35    35     230     230     230
+Workshop       57    57    57    1111    1111    1111
+1+ ACL.Main    79    79    79     313     344     356
+1+ EMNLP       75    75    75     232     251     259
+1+ NAACL       55    55    55     177     195     197
+1+ TACL        27    28    28      40      45      45
+1+ COLING      44    45    45     224     298     324
+1+ SemEval     35    35    35     181     204     211
+1+ Workshop    57    57    57     623     845     934
+
+Published in 2017
+
+            Year1 Year2 Year3 N.Year1 N.Year2 N.Year3
+all           145   145   145    3030    3030    3030
+0              59    14    10    1542     416     174
+1+            136   145   145     808    2111    2519
+2+            128   145   145     522    1731    2222
+3+            125   145   145     361    1441    1977
+ACL.Main       88    88    88     353     353     353
+EMNLP          74    74    74     339     339     339
+EACL           42    42    42     235     235     235
+TACL           24    24    24      41      41      41
+COLING          0     0     0       0       0       0
+SemEval        28    28    28     208     208     208
+Workshop       66    66    66    1191    1191    1191
+1+ ACL.Main    83    83    88     290     306     331
+1+ EMNLP       65    65    74     295     298     325
+1+ EACL        41    41    42     166     197     213
+1+ TACL        17    17    24      36      36      39
+1+ COLING       0     0     0       0       0       0
+1+ SemEval     28    28    28     116     159     191
+1+ Workshop    58    58    66     625     756     933
+
+all           & 151 & 3710	&          145  &   3030 \\
+0             &  16 &  691	&              59  &   1542 \\
+1+            & 151 &    2340	&            136  &    808 \\
+2+            & 151   &   1856	&            128  &  522 \\
+3+            & 151   &   1518	&            125  &    361 \\
+ACL.Main      &  79   &    377	&      88  & 353 \\
+EMNLP         &  75   &    269	&          74  &    339 \\
+TACL          &  28   &   45	&           24   &     41 \\
+SemEval       &  35   &     230	&        28   &    208 \\
+Workshop      &  57   &  1111	&       66   &   1191 \\
+
+sapply(split(x2016$X2020, x2016$PubMed), summary)
+
+Hindex = function(cites) { x = sort(cites, decreasing=T); sum(x >= (1:length(x)))} 
+rbind(sapply(split(x2016$X2020, x2016$ACL), Hindex),
+      sapply(split(x2016$X2020, x2016$ArXiv), Hindex),
+      sapply(split(x2016$X2020, x2016$PubMed), Hindex)
+      )
+
+for(tt in 1:4) {
+print(sapply(split(x2016$X2020, x2016$X2017 > tt), Hindex))
+}
+
+mysum = function(x) { res = c(Hindex(x), median(x), mean(x), sd(x), length(x)); names(res) = c("H", "median",  "mean", "sd", "N"); res}
+
+ACL = x2016$X2020[x2016$ACL > 0]
+ArXiv = x2016$X2020[x2016$ArXiv > 0]
+PubMed = x2016$X2020[x2016$PubMed > 0]
+
+citations0 = x2016$X2020[x2016$X2017 == 0]
+citations1 = x2016$X2020[x2016$X2017 >= 1]
+citations2 = x2016$X2020[x2016$X2017 >= 2]
+citations3 = x2016$X2020[x2016$X2017 >= 3]
+citations10 = x2016$X2020[x2016$X2017 >= 10]
+citations20 = x2016$X2020[x2016$X2017 >= 20]
+
+
+z2016 =rbind(mysum(ACL), mysum(ArXiv), mysum(PubMed),
+	mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+dimnames(z2016)[[1]] = c("ACL", "ArXiv", "PubMed", "cite0", "cite1+", "cite2+", "cite3+", "cite10+", "cite20+")
+z2016
+
+ACL = x2017$X2021[x2017$ACL > 0]
+ArXiv = x2017$X2021[x2017$ArXiv > 0]
+PubMed = x2017$X2021[x2017$PubMed > 0]
+
+citations0 = x2017$X2021[x2017$X2018 == 0]
+citations1 = x2017$X2020[x2017$X2018 >= 1]
+citations2 = x2017$X2020[x2017$X2018 >= 2]
+citations3 = x2017$X2020[x2017$X2018 >= 3]
+citations10 = x2017$X2020[x2017$X2018 >= 10]
+citations20 = x2017$X2020[x2017$X2018 >= 20]
+
+
+z2017 =rbind(mysum(ACL), mysum(ArXiv), mysum(PubMed),
+	mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+dimnames(z2017)[[1]] = c("ACL", "ArXiv", "PubMed", "cite0", "cite1+", "cite2+", "cite3+", "cite10+", "cite20+")
+z2017
+
+# cor(cbind(A2016$Anthology2 == "ACL", 
+# A2016$Anthology2 == "EMNLP", 
+# A2016$Anthology2 == "TACL", 
+# A2016$Anthology2 == "SemEval", 
+# A2016$Anthology2 == "Workshp"), A2016[,4:11])
+
+
+ACL = A2016$X2020[A2016$Anthology2 == "ACL"]
+EMNLP = A2016$X2020[A2016$Anthology2 == "EMNLP"]
+TACL = A2016$X2020[A2016$Anthology2 == "TACL"]
+SemEval = A2016$X2020[A2016$Anthology2 == "SemEval"]
+Workshp = A2016$X2020[A2016$Anthology2 == "Workshp"]
+
+citations0 = A2016$X2020[A2016$X2017 == 0]
+citations1 = A2016$X2020[A2016$X2017 >= 1]
+citations2 = A2016$X2020[A2016$X2017 >= 2]
+citations3 = A2016$X2020[A2016$X2017 >= 3]
+citations10 = A2016$X2020[A2016$X2017 >= 10]
+citations20 = A2016$X2020[A2016$X2017 >= 20]
+
+zz2016 =rbind(mysum(ACL), mysum(EMNLP), mysum(TACL), mysum(SemEval), mysum(Workshp), 
+	mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+dimnames(zz2016)[[1]] = c("ACL", "EMNLP", "TACL", "SemEval", "Workshops", "cite0", "cite1+", "cite2+", "cite3+", "cite10+", "cite20+")
+zz2016
+
+
+
+ACL = A2017$X2021[A2017$Anthology2 == "ACL"]
+EMNLP = A2017$X2021[A2017$Anthology2 == "EMNLP"]
+TACL = A2017$X2021[A2017$Anthology2 == "TACL"]
+SemEval = A2017$X2021[A2017$Anthology2 == "SemEval"]
+Workshp = A2017$X2021[A2017$Anthology2 == "Workshp"]
+
+citations0 = A2017$X2021[A2017$X2018 == 0]
+citations1 = A2017$X2021[A2017$X2018 >= 1]
+citations2 = A2017$X2021[A2017$X2018 >= 2]
+citations3 = A2017$X2021[A2017$X2018 >= 3]
+citations10 = A2017$X2021[A2017$X2018 >= 10]
+citations20 = A2017$X2021[A2017$X2018 >= 20]
+
+zz2017 =rbind(mysum(ACL), mysum(EMNLP), mysum(TACL), mysum(SemEval), mysum(Workshp), 
+	mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+dimnames(zz2017)[[1]] = c("ACL", "EMNLP", "TACL", "SemEval", "Workshops", "cite0", "cite1+", "cite2+", "cite3+", "cite10+", "cite20+")
+zz2017
+
+cbind(zz2016, zz2017)
+
+           H median  mean    sd    N  H median  mean   sd    N
+ACL & 42 & 5 & 18.7 & 45.2 & 377 & 41 & 7 & 20.28 & 50.7 & 353 \\
+EMNLP & 41 & 6 & 25.8 & 78.9 & 269 & 36 & 6 & 17.89 & 36.5 & 339\\
+TACL & 17 & 11 & 70.5 & 280.3 & 45 & 12 & 8 & 15.37 & 23.3 & 41 \\
+SemEval & 15 & 1 & 4.7 & 16.3 & 230 & 14 & 1 & 5.50 & 23.5 & 208\\ 
+Workshops & 24 & 1 & 3.8 & 10.1 & 1111 & 30 & 1 & 4.23 & 12.5 & 1191\\
+0 & 9 & 0 & 1.0 & 1.8 & 953 & 7 & 0 & 0.92 & 1.6 & 589\\
+1+ & 73 & 4 & 17.1 & 79.2 & 2025 & 65 & 4 & 12.91 & 36.0 & 1902\\
+2+ & 73 & 6 & 21.6 & 90.0 & 1550 & 65 & 5 & 15.72 & 39.8 & 1518\\
+3+ & 73 & 8 & 26.1 & 99.9 & 1246 & 65 & 7 & 18.32 & 43.2 & 1262\\
+10+ & 73 & 25 & 63.1 & 165.2 & 422 & 65 & 20 & 38.01 & 64.2 & 487\\
+20+ & 70 & 58 & 120.5 & 242.2 & 178 & 62 & 36 & 63.86 & 88.7 & 212\\
+
+
+ACL = x2017$X2021[x2017$ACL > 0]
+ArXiv = x2017$X2021[x2017$ArXiv > 0]
+PubMed = x2017$X2021[x2017$PubMed > 0]
+
+citations0 = x2017$X2021[x2017$X2018 == 0]
+citations1 = x2017$X2020[x2017$X2018 >= 1]
+citations2 = x2017$X2020[x2017$X2018 >= 2]
+citations3 = x2017$X2020[x2017$X2018 >= 3]
+citations10 = x2017$X2020[x2017$X2018 >= 10]
+citations20 = x2017$X2020[x2017$X2018 >= 20]
+
+z2017 =rbind(mysum(ACL), mysum(ArXiv), mysum(PubMed),
+	mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+dimnames(z2017)[[1]] = c("ACL", "ArXiv", "PubMed", "cite0", "cite1+", "cite2+", "cite3+", "cite10+", "cite20+")
+z2017
+
+cbind(z2016, z2017)
+
+
+cbind(z2016, z2017)
+
+
+     &    H & median & mean &   sd &       N &   H & median & mean &   sd &       N \\
+ACL &     73 &      2 &  9.9 & 59.0 &    3710 &  65  &     2 &  8.5 & 29.1 &    3030 \\
+ArXiv &  236 &      2 &  6.4 47.0 &   101,176 & 234 &      1 &  6.1 58.4 &  110,184 \\
+PubMed & 292 &      2 &  5.4 17.2 & 1,026,798 & 293 &      2 &  5.2 & 18.6 & 107,7437 \\
+cite0 &   48 &      1 &  1.3 &  2.3 &  292,566 &  35 &      1 &  1.3  & 2.1 &  295,467 \\
+cite1+ & 345 &      5 &  8.7 & 28.6 &  604,536 & 338  &     5 &  9.2 27.8 &  645,904 \\
+cite2+ & 345 &      6 & 10.6 & 32.9 &  448,541 & 338  &     6 & 11.3 & 32.0 &  479,097 \\
+cite3+ & 345 &      7 & 12.7 & 37.6 &  338,583 & 338 &      8 & 13.5 & 36.4 &  361,722 \\
+
+
+
+cbind(
+c(median(),
+  median(),
+  median(x2016$X2020[x2016$PubMed > 0])),
+
+c(Hindex(x2016$X2020[x2016$ACL > 0]),
+  Hindex(x2016$X2020[x2016$ArXiv > 0]),
+  Hindex(x2016$X2020[x2016$PubMed > 0])),
+
+c(mean(x2016$X2020[x2016$ACL > 0]),
+ mean(x2016$X2020[x2016$ArXiv > 0]),
+ mean(x2016$X2020[x2016$PubMed > 0])),
+
+c(sd(x2016$X2020[x2016$ACL > 0]),
+ sd(x2016$X2020[x2016$ArXiv > 0]),
+ sd(x2016$X2020[x2016$PubMed > 0]))
+ )
+
+
+
+
+cbind(
+c(median(x2017$X2021[x2017$ACL > 0]),
+  median(x2017$X2021[x2017$ArXiv > 0]),
+  median(x2017$X2021[x2017$PubMed > 0])),
+
+c(Hindex(x2017$X2021[x2017$ACL > 0]),
+  Hindex(x2017$X2021[x2017$ArXiv > 0]),
+  Hindex(x2017$X2021[x2017$PubMed > 0])),
+
+c(mean(x2017$X2021[x2017$ACL > 0]),
+ mean(x2017$X2021[x2017$ArXiv > 0]),
+ mean(x2017$X2021[x2017$PubMed > 0])),
+
+c(sd(x2017$X2021[x2017$ACL > 0]),
+ sd(x2017$X2021[x2017$ArXiv > 0]),
+ sd(x2017$X2021[x2017$PubMed > 0]))
+ )
+
+
+
+
+  Anthology2       id X2016 X2017 X2018 X2019 X2020 X2021 X2022
+
+
+      NAACL & 9724599 & 5 & 7 & 5 & 1 & 3 & 1 & 0 \\
+       LREC & 12260053 & 0 & 0 & 0 & 1 & 0 & 0 & 0 \\
+  LREC & 28309452 & 2 & 8 & 4 & 10 & 7 & 7 & 3 \\
+  EMNLP & 1380793 & 0 & 2 & 16 & 19 & 17 & 19 & 18 \\
+  COLING & 18649702 & 0 & 1 & 2 & 1 & 3 & 1 & 4 \\
+  SemEval & 17378758 & 0 & 0 & 0 & 2 & 0 & 0 & 0 \\
+  
+
+cbind(zz2016, zz2017)
+           H median  mean    sd    N  H median  mean   sd    N
+ACL       42      5  18.7  45.2  377 41      7 20.28 50.7  353
+EMNLP     41      6  25.8  78.9  269 36      6 17.89 36.5  339
+TACL      17     11  70.5 280.3   45 12      8 15.37 23.3   41
+SemEval   15      1   4.7  16.3  230 14      1  5.50 23.5  208
+Workshops 24      1   3.8  10.1 1111 30      1  4.23 12.5 1191
+cite0 & 9 & 0 & 1.0 & 1.8 & 953 & 7 & 0 & 0.92 & 1.6 & 589
+cite1+ & 73 & 3 & 13.0 & 68.2 & 2757 & 65 & 3 & 10.34 & 32.2 & 2441 \\
+cite2+ & 73 & 4 & 17.1 & 79.2 & 2025 & 65 & 4 & 12.91 & 36.0 & 1902 \\
+cite3+ & 73 & 6 & 21.6 & 90.0 & 1550 & 65 & 5 & 15.72 & 39.8 & 1518 \\
+cite10+ & 73 & 23 & 57.0 & 155.6 & 481 & 65 & 18 & 35.25 & 61.3 & 545 \\
+cite20+ & 71 & 54 & 114.9 & 235.6 & 190 & 63 & 34 & 62.16 & 86.9 & 223 \\
+
+
+          H median mean    sd       N   H median mean    sd       N
+ACL      73      2  9.9  59.0    3710  65      2  8.5  29.1    3030
+ArXiv   236      2  6.4  47.0  101176 234      1  6.1  58.4  110184
+PubMed  292      2  5.4  17.2 1026798 293      2  5.2  18.6 1077437
+0 & 48 & 1 & 1.3 & 2.3 & 292,566 & 35 & 1 & 1.3 & 2.1 & 295,467 \\
+1+ & 345 & 3 & 6.9 & 24.7 & 828,515 & 339 & 4 & 7.4 & 24.0 & 883,685 \\
+2+ & 345 & 5 & 8.7 & 28.6 & 604,536 & 338 & 5 & 9.2 & 27.8 & 645,904 \\
+3+ & 345 & 6 & 10.6 & 32.9 & 448,541 & 338 & 6 & 11.3 & 32.0 & 479,097 \\
+10+ & 343 & 17 & 28.6 & 70.1 & 88,490 & 337 & 19 & 30.0 & 67.5 & 95,105 \\
+20+ & 341 & 37 & 61.4 & 127.8 & 23,593 & 336 & 41 & 62.9 & 122.1 & 25,613 \\
+
+
+                          [,1] [,2] [,3]  [,4]
+(Intercept)               15.7 15.3 18.0 14.98
+ACL                        4.3  1.5  1.6 -0.13
+ArXiv                      5.4  3.4  2.1  3.60
+PubMed                    10.7 11.3  8.8  8.97
+DBLP                       2.4  3.0  4.4  5.64
+DOI                        5.5  5.8  5.5  7.60
+factor(pmin(dd, X2017))1   6.9  6.3  5.4  3.63
+factor(pmin(dd, X2017))2  15.1 13.9 12.6 11.07
+factor(pmin(dd, X2017))3  22.2 21.1 19.5 17.57
+factor(pmin(dd, X2017))4  28.7 26.8 25.2 23.74
+factor(pmin(dd, X2017))5  33.3 32.4 30.8 28.73
+factor(pmin(dd, X2017))6  38.3 36.9 34.8 33.33
+factor(pmin(dd, X2017))7  42.1 40.9 39.8 37.31
+factor(pmin(dd, X2017))8  45.7 44.8 42.8 40.33
+factor(pmin(dd, X2017))9  49.5 47.4 45.2 43.18
+factor(pmin(dd, X2017))10 59.4 59.8 57.7 56.68
+
+                            [,1]   [,2]
+(Intercept)                36.71  32.79
+Anthology2COLING            0.58 -11.31
+Anthology2CONLL            -6.45  -1.68
+Anthology2EMNLP             1.24   2.59
+Anthology2LREC             -4.85  -0.54
+Anthology2misc            -10.57  -2.62
+Anthology2NAACL            -3.24  -1.42
+Anthology2SemEval         -13.71  -5.14
+Anthology2TACL              6.76   6.53
+Anthology2Workshp          -6.09  -4.90
+factor(pmin(dd, X2017))1    4.73   3.75
+factor(pmin(dd, X2017))2   12.60   9.55
+factor(pmin(dd, X2017))3   19.34  17.08
+factor(pmin(dd, X2017))4   26.33  20.80
+factor(pmin(dd, X2017))5   27.84  27.26
+factor(pmin(dd, X2017))6   33.48  31.73
+factor(pmin(dd, X2017))7   38.09  34.29
+factor(pmin(dd, X2017))8   41.61  38.57
+factor(pmin(dd, X2017))9   46.62  40.79
+factor(pmin(dd, X2017))10  54.59  54.14
+
+cbind(g2016$coef[11:20],
+g2017$coef[11:20],
+g2018$coef[11:20])
+
+                          [,1] [,2] [,3]
+factor(pmin(dd, X2017))1   4.7  3.7  2.6
+factor(pmin(dd, X2017))2  12.6  9.6  7.3
+factor(pmin(dd, X2017))3  19.3 17.1 14.5
+factor(pmin(dd, X2017))4  26.3 20.8 18.7
+factor(pmin(dd, X2017))5  27.8 27.3 25.9
+factor(pmin(dd, X2017))6  33.5 31.7 28.2
+factor(pmin(dd, X2017))7  38.1 34.3 35.2
+factor(pmin(dd, X2017))8  41.6 38.6 36.0
+factor(pmin(dd, X2017))9  46.6 40.8 36.3
+factor(pmin(dd, X2017))10 54.6 54.1 51.9
+
+
+Intercept &  36.7 & 32.8 & 34.9
+1 & 4.7 & 3.7 & 2.6
+2 & 12.6 & 9.6 & 7.3
+3 & 19.3 & 17.1 & 14.5
+4 & 26.3 & 20.8 & 18.7
+5 & 27.8 & 27.3 & 25.9
+6 & 33.5 & 31.7 & 28.2
+7 & 38.1 & 34.3 & 35.2
+8 & 41.6 & 38.6 & 36.0
+9 & 46.6 & 40.8 & 36.3
+10 & 54.6 & 54.1 & 51.9
+
+(Intercept) & 15.7 & 15.3 & 18.0 & 14.98 & 36.7 & 32.8 & 34.9 \\
+ACL & 4.3 & 1.5 & 1.6 & -0.13 \\
+ArXiv & 5.4 & 3.4 & 2.1 & 3.60 \\
+PubMed & 10.7 & 11.3 & 8.8 & 8.97 \\
+DBLP & 2.4 & 3.0 & 4.4 & 5.64 \\
+DOI & 5.5 & 5.8 & 5.5 & 7.60 \\
+TACL &&&& & 6.76 & 6.5 & NA \\
+EMNLP &&&& & 1.24 & 2.6 & -1.1 \\
+COLING &&&& & 0.58 & NA & -3.5 \\
+LREC &&&& & -4.85 & NA & -3.6 \\
+NAACL &&&& & -3.24 & NA & -2.7 \\
+CONLL &&&& & -6.45 & -11.3 & -5.4 \\
+Workshp &&&& & -6.09 & -4.9 & -5.6 \\
+SemEval &&&& & -13.71 & -5.1 & -11.3 \\
+misc &&&& & -10.57 & -2.6 & -9.9 \\
+1 & 6.9 & 6.3 & 5.4 & 3.63 & 4.7 & 3.7 & 2.6 \\
+2 & 15.1 & 13.9 & 12.6 & 11.07 & 12.6 & 9.6 & 7.3 \\
+3 & 22.2 & 21.1 & 19.5 & 17.57 & 19.3 & 17.1 & 14.5  \\
+4 & 28.7 & 26.8 & 25.2 & 23.74 & 26.3 & 20.8 & 18.7 \\
+5 & 33.3 & 32.4 & 30.8 & 28.73 & 27.8 & 27.3 & 25.9 \\
+6 & 38.3 & 36.9 & 34.8 & 33.33 & 33.5 & 31.7 & 28.2 \\
+7 & 42.1 & 40.9 & 39.8 & 37.31 & 38.1 & 34.3 & 35.2 \\
+8 & 45.7 & 44.8 & 42.8 & 40.33 & 41.6 & 38.6 & 36.0 \\
+9 & 49.5 & 47.4 & 45.2 & 43.18 & 46.6 & 40.8 & 36.3 \\
+10 & 59.4 & 59.8 & 57.7 & 56.68 & 54.6 & 54.1 & 51.9 \\
+
+s = c("Anthology2COLING", "Anthology2CONLL", "Anthology2EMNLP", "Anthology2LREC", "Anthology2misc", "Anthology2NAACL", "Anthology2SemEval",  "Anthology2TACL", "Anthology2Workshp")
+
+cbind(g2016$coef[s], g2017$coef[s], g2018$coef[s])
+
+cbind(g2016$coef[11:20], g2017$coef[11:20], g2018$coef[11:20])
+
+cd /Users/kennethchurch/to_go/with_key
+awk '{print $1}' PubMed.201[6789].summary  | egrep -v '[a-z]' > /tmp/x
+cd PubMed/venue
+awk 'BEGIN {while (getline < "/tmp/x" > 0) x[$1]=1}; $1 in x' venue.piece.???.V2 > 201x.venues
+cut -f3 201x.venues | sort | uniq -c | sort -nr | sed 50q > 201x.venues.hist
+
+awk 'BEGIN {while (getline < "201x.venues.hist" > 0) if($1 > 15000) x[$2]=1; OFS=FS="\t"} $3 in x {print $1, $NF; next}; {print $1, "misc"}' 201x.venues > 201x.venues.norm
+
+for f in PubMed.201[67].summary
+do
+awk -F'\t' 'BEGIN {FS=OFS="\t"; while(getline < "PubMed/venue/201x.venues.norm" > 0) x[$1]=$2}; 
+NR == 1 {print $0, "venue"; next} 
+$1 in x {print $0, x[$1]; next}; 
+{print $0, "misc"}' $f > "$f"2
+done
+
+n = names(table(P2016$venue))
+res2016 = matrix(rep(0, length(n)*5), ncol=5)
+r1 = mysum(P2016$X2020[P2016$venue==n[1]])
+dimnames(res2016) = list(n, names(r1))
+for(nn in n) res2016[nn,] = mysum(P2016$X2020[P2016$venue==nn])
+
+res2017 = matrix(rep(0, length(n)*5), ncol=5)
+dimnames(res2017) = list(n, names(r1))
+for(nn in n) res2017[nn,] = mysum(P2017$X2021[P2017$venue==nn])
+
+o = order(-res2016[,3])
+
+cbind(res2016,res2017)[o,]
+
+
+citations0 = P2016$X2020[P2016$X2017 == 0]
+citations1 = P2016$X2020[P2016$X2017 >= 1]
+citations2 = P2016$X2020[P2016$X2017 >= 2]
+citations3 = P2016$X2020[P2016$X2017 >= 3]
+citations10 = P2016$X2020[P2016$X2017 >= 10]
+citations20 = P2016$X2020[P2016$X2017 >= 20]
+c2016 = rbind(mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+
+citations0 = P2017$X2021[P2017$X2018 == 0]
+citations1 = P2017$X2020[P2017$X2018 >= 1]
+citations2 = P2017$X2020[P2017$X2018 >= 2]
+citations3 = P2017$X2020[P2017$X2018 >= 3]
+citations10 = P2017$X2020[P2017$X2018 >= 10]
+citations20 = P2017$X2020[P2017$X2018 >= 20]
+c2017 = rbind(mysum(citations0), mysum(citations1), mysum(citations2), mysum(citations3), mysum(citations10), mysum(citations20))
+
+cbind(c2016,c2017)
+
+
+0 & 47 & 1 & 1.4 & 2.3 & 265,090 & 33 & 1 & 1.3 & 2.1 & 268,696 \\
+1+ & 292 & 3 & 6.8 & 19.8 & 761,729 & 298 & 4 & 7.3 & 19.1 & 808,772 \\
+2+ & 291 & 5 & 8.5 & 22.8 & 557,824 & 298 & 5 & 9.1 & 22.0 & 591,657 \\
+3+ & 291 & 6 & 10.3 & 26.1 & 414,641 & 298 & 7 & 11.0 & 25.2 & 438,445 \\
+10+ & 289 & 17 & 27.1 & 54.2 & 81,125 & 297 & 19 & 28.8 & 52.1 & 84,876 \\
+20+ & 288 & 37 & 56.4 & 97.3 & 21,329 & 295 & 41 & 59.5 & 92.8 & 22,119 \\
+
+
+
+Science                &                                                         113 & 8 & 30.3 & 59.9 & 1732 & 97 & 3 & 22.14 & 48.9 & 1829 \\
+Nature                  &                                                        112 & 5 & 28.0 & 74.9 & 2094 & 109 & 4 & 27.12 & 70.7 & 2020 \\
+Nature Communications    &                                                        88 & 12 & 18.7 & 25.9 & 3702 & 85 & 11 & 17.77 & 32.0 & 4505 \\
+Journal of the American Chemical Society                                         & 68 & 10 & 15.9 & 22.1 & 2414 & 68 & 8 & 13.80 & 20.0 & 2679 \\
+Proceedings of the National Academy of Sciences of the United States of America  & 73 & 9 & 14.6 & 25.0 & 3629 & 68 & 8 & 12.78 & 19.4 & 3846 \\
+bioRxiv & 55 & 6 & 14.1 & 41.9 & 1396 & 54 & 5 & 10.38 & 29.6 & 3121 \\
+Angewandte Chemie                                                                & 70 & 7 & 13.5 & 21.3 & 2776 & 62 & 6 & 10.68 & 15.9 & 2795 \\
+Bioresource Technology                                                           & 42 & 7 & 10.8 & 15.0 & 1612 & 40 & 7 & 10.02 & 11.9 & 1644 \\
+ACS Applied Materials and Interfaces                                             & 49 & 7 & 10.0 & 10.7 & 4074 & 50 & 6 & 9.46 & 10.3 & 4933 \\
+Nutrients                                                                        & 34 & 5 & 9.4 & 16.6 & 825 & 38 & 6 & 8.79 & 14.9 & 1356 \\
+Frontiers in Plant Science                                                       & 44 & 6 & 9.0 & 15.7 & 2045 & 41 & 6 & 8.71 & 14.0 & 2257 \\
+Physical Review Letters                                                          & 48 & 5 & 8.8 & 13.4 & 2501 & 42 & 4 & 6.86 & 11.7 & 2674 \\
+Frontiers in Immunology                                                          & 29 & 5 & 8.6 & 11.4 & 671 & 39 & 5 & 7.99 & 10.3 & 1901 \\
+Science of the Total Environment                                                 & 42 & 6 & 8.6 & 11.3 & 2508 & 46 & 5 & 8.93 & 15.2 & 2853 \\
+Frontiers in Microbiology                                                        & 43 & 5 & 8.6 & 14.9 & 2175 & 47 & 5 & 8.18 & 14.2 & 2621 \\
+Food Chemistry                                                                   & 36 & 6 & 8.5 & 9.4 & 1930 & 31 & 6 & 8.18 & 7.8 & 1798 \\
+Chemosphere                                                                      & 35 & 5 & 7.7 & 12.1 & 1653 & 35 & 4 & 7.18 & 11.8 & 1916 \\
+Nanoscale                                                                        & 37 & 4 & 7.2 & 9.3 & 2166 & 31 & 4 & 5.89 & 7.8 & 2147 \\
+International Journal of Biological Macromolecules                               & 28 & 5 & 7.2 & 8.6 & 1159 & 32 & 5 & 7.34 & 9.8 & 1616 \\
+International Journal of Molecular Sciences                                      & 37 & 4 & 7.1 & 11.4 & 2068 & 47 & 4 & 7.91 & 13.3 & 2746 \\
+Scientific Reports                                                               & 67 & 4 & 6.8 & 14.5 & 20860 & 64 & 4 & 6.27 & 22.2 & 25006 \\
+Analytical Chemistry                                                             & 29 & 5 & 6.8 & 7.5 & 1648 & 30 & 4 & 6.32 & 7.3 & 1817 \\
+BMJ Open                                                                         & 33 & 3 & 5.9 & 12.0 & 2016 & 31 & 3 & 4.81 & 8.1 & 2554 \\
+Molecules                                                                        & 34 & 3 & 5.8 & 12.2 & 1745 & 35 & 3 & 5.35 & 8.5 & 2247 \\
+Frontiers in Psychology                                                          & 38 & 3 & 5.7 & 9.9 & 2074 & 32 & 3 & 5.50 & 12.2 & 2252 \\
+OncoTarget                                                                       & 42 & 4 & 5.5 & 6.8 & 7454 & 37 & 3 & 4.03 & 6.1 & 9282 \\
+Materials                                                                        & 24 & 3 & 5.3 & 7.8 & 1024 & 27 & 3 & 4.94 & 8.5 & 1473 \\
+Journal of Biological Chemistry                                                  & 26 & 4 & 5.2 & 6.5 & 2135 & 27 & 3 & 5.02 & 6.2 & 1852 \\
+Chemical Communications                                                          & 33 & 3 & 5.2 & 7.2 & 3046 & 25 & 3 & 3.90 & 4.7 & 2689 \\
+Italian National Conference on Sensors                                           & 34 & 3 & 5.2 & 12.9 & 2220 & 39 & 3 & 5.32 & 10.8 & 2962 \\
+British medical journal                                                          & 41 & 0 & 5.2 & 37.2 & 1837 & 39 & 0 & 4.74 & 29.6 & 1670 \\
+International Journal of Environmental Research and Public Health                & 24 & 3 & 5.2 & 7.1 & 1118 & 31 & 4 & 6.16 & 11.1 & 1575 \\
+Organic Letters                                                                  & 18 & 4 & 5.1 & 4.1 & 1646 & 16 & 3 & 4.00 & 3.4 & 1699 \\
+misc                                                                            & 274 & 2 & 5.1 & 17.1 & 878782 & 273 & 2 & 4.90 & 18.8 & 913401 \\
+PLoS ONE                                                                         & 59 & 3 & 5.1 & 8.8 & 22512 & 55 & 3 & 4.79 & 8.6 & 20617 \\
+Environmental science and pollution research international                       & 30 & 3 & 4.9 & 6.6 & 2430 & 32 & 3 & 4.89 & 7.5 & 2527 \\
+Chemistry                                                                        & 26 & 3 & 4.8 & 5.8 & 2271 & 23 & 3 & 3.83 & 4.5 & 2306 \\
+BioMed Research International                                                    & 25 & 3 & 4.5 & 8.8 & 1790 & 27 & 2 & 4.40 & 7.2 & 2005 \\
+Medicine                                                                         & 27 & 2 & 4.1 & 14.2 & 3275 & 22 & 2 & 2.75 & 8.5 & 3526 \\
+Optics Express                                                                   & 26 & 2 & 3.9 & 5.3 & 2871 & 23 & 2 & 3.35 & 5.0 & 2739 \\
+Physical Chemistry, Chemical Physics - PCCP                                      25 & 2 & 3.6 & 5.4 & 3584 & 22 & 2 & 2.94 & 5.6 & 3258 \\
+RSC Advances                                                                     & 8 & 3 & 3.5 & 3.1 & 78 & 8 & 3 & 4.15 & 5.0 & 60 \\
+Biochemical and Biophysical Research Communications - BBRC                       & 19 & 2 & 3.5 & 5.3 & 1744 & 22 & 2 & 3.56 & 6.6 & 2056 \\
+Journal of Chemical Physics                                                      & 23 & 2 & 3.4 & 7.8 & 2087 & 19 & 2 & 2.80 & 6.8 & 1944 \\
+Dalton Transactions                                                              & 22 & 2 & 3.4 & 4.5 & 2085 & 18 & 2 & 2.92 & 3.8 & 1791 \\
+World Neurosurgery                                                               & 15 & 2 & 2.7 & 3.7 & 1300 & 18 & 2 & 2.61 & 3.6 & 1999 \\
+Oncology Letters                                                                 & 15 & 2 & 2.7 & 3.5 & 1517 & 16 & 2 & 2.70 & 3.5 & 2207 \\
+Physical Review E                                                                & 18 & 1 & 2.5 & 3.5 & 2284 & 18 & 1 & 2.13 & 3.7 & 2172 \\
+Methods in molecular biology                                                     & 18 & 1 & 1.8 & 4.9 & 2888 & 24 & 1 & 2.00 & 5.5 & 3612 \\
+BMJ Case Reports                                                                 & 9 & 1 & 1.1 & 1.7 & 1401 & 7 & 1 & 0.97 & 1.3 & 1689 \\
+Zootaxa                                                                          & 11 & 0 & 1.1 & 2.2 & 1967 & 9 & 0 & 1.02 & 3.0 & 1224 \\
+
+
+boxplot(rbind(c2016[,"mean"], c2017[,"mean"]), names=c("0", "1+", "2+", "3+", "10+", "20+"))
+o = order(-res2016[,3])
+labs=dimnames(res2016)[[1]][o]
+labs[labs == "misc"] = "All other PubMed venues"
+boxplot(rbind(res2016[,"mean"][o], res2017[,"mean"][o]), names=paste(1:51))
+
+pdf("to_go/with_key/ACL/PubMed_impact_factors.pdf", pointsize=16)
+par(mfrow=c(1,2))
+boxplot(rbind(c2016[2:6,"mean"], c2017[2:6,"mean"]), names=c("1+", "2+", "3+", "10+", "20+"), main="Early Citations", ylab="Impact Factor", ylim=c(1,60), log='y', las=2)
+boxplot(rbind(res2016[,"mean"][o], res2017[,"mean"][o]), names=paste(1:51), main="PubMed Venues",  ylab="Impact Factor", ylim=c(1,60), log='y', las=2)
+dev.off()
+
+

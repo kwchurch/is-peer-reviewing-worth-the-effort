@@ -1,0 +1,592 @@
+Publishing in PubMed is worth about 2 citations in the first year;
+Publishing in ACL is worth about 1 citation in the first year
+Publishing in ArXiv is worth about 80% of a citation in the first year.
+
+> summary(g)
+
+nrank = function(x) { rank(x)/length(x) }
+
+x2016 = read.table("to_go/with_key/2016.summary", header=T)
+g2016 = glm(nrank(X2020) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2016)), data = x2016)
+
+x2017 = read.table("to_go/with_key/2017.summary", header=T)
+g2017 = glm(nrank(X2021) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2017)), data = x2017)
+
+x2018 = read.table("to_go/with_key/2018.summary", header=T)
+g2018 = glm(nrank(X2022) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2018)), data = x2018)
+
+dd=10
+nrank = function(x) { rank(x)/length(x) }
+
+# x2016 = read.table("to_go/with_key/2016.summary", header=T)
+s2016 = (x2016$ACL + x2016$PubMed + x2016$ArXiv) == 1
+d1 = sum(x2016$ACL[s2016])
+d2 = sum(x2016$PubMed[s2016])
+d3 = sum(x2016$ArXiv[s2016])
+g2016 = glm(nrank(X2020) ~ ACL + ArXiv + PubMed + factor(pmin(dd, X2016)), data = x2016[s2016,], weights = x2016$ACL[s2016]/d1 + x2016$PubMed[s2016]/d2 + x2016$ArXiv[s2016]/d3)
+g2016b = glm(nrank(X2020) ~ factor(pmin(dd, X2016)), data = x2016[s2016,], weights = x2016$ACL[s2016]/d1 + x2016$PubMed[s2016]/d2 + x2016$ArXiv[s2016]/d3)
+
+# x2016 = read.table("to_go/with_key/2016.summary", header=T)
+d1 = sum(x2016$ACL)
+d2 = sum(x2016$PubMed)
+d3 = sum(x2016$ArXiv)
+# g2016 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed)^3 + factor(pmin(dd, X2016)), data = x2016, weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3)
+g2016 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed) + factor(pmin(dd, X2016)), data = x2016, weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3)
+
+
+# x2017 = read.table("to_go/with_key/2017.summary", header=T)
+d1 = sum(x2017$ACL)
+d2 = sum(x2017$PubMed)
+d3 = sum(x2017$ArXiv)
+# g2017 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed)^3 + factor(pmin(dd, X2017)), data = x2017, weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3)
+g2017 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed) + factor(pmin(dd, X2017)), data = x2017, weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3)
+
+# x2018 = read.table("to_go/with_key/2018.summary", header=T)
+d1 = sum(x2018$ACL)
+d2 = sum(x2018$PubMed)
+d3 = sum(x2018$ArXiv)
+# g2018 = glm(nrank(X2022) ~ (ACL + ArXiv + PubMed)^3 + factor(pmin(dd, X2018)), data = x2018, weights = x2018$ACL/d1 + x2018$PubMed/d2 + x2018$ArXiv/d3)
+g2018 = glm(nrank(X2022) ~ (ACL + ArXiv + PubMed) + factor(pmin(dd, X2018)), data = x2018, weights = x2018$ACL/d1 + x2018$PubMed/d2 + x2018$ArXiv/d3)
+
+plot(c(0,dd), range(g2016$fitted.values), type='n', xlab="Citations in 1st Year after Publication", ylab="Normalized rank in 4th Year after Publication")
+s = x2016$PubMed[s2016] > 0; points(jitter(pmin(dd, x2016$X2016[s2016][s])), jitter(g2016$fitted.values[s]), pch='.')
+s = x2016$ArXiv[s2016] > 0; points(jitter(pmin(dd,x2016$X2016[s2016][s])), jitter(g2016$fitted.values[s]), pch='.', col="red")
+s = x2016$ACL[s2016] > 0; points(jitter(pmin(dd, x2016$X2016[s2016][s])), jitter(g2016$fitted.values[s]), pch='a', col="blue")
+
+plot(c(0,dd), range(g2016$fitted.values), type='n', xlab="Citations in 1st Year after Publication", ylab="Normalized rank in 4th Year after Publication")
+points(jitter(pmin(dd, x2016$X2016)), jitter(g2016$fitted.values), pch='.')
+points(jitter(pmin(dd,x2016$X2016)), jitter(g2016$fitted.values), pch='.', col="red")
+points(jitter(pmin(dd, x2016$X2016)), jitter(g2016$fitted.values), pch='a', col="blue")
+
+
+df = data.frame(X2016 = rep(0:dd, 3), ACL = c(rep(1, dd+1), rep(0, 2*(dd+1))))
+df$PubMed = c(rep(0,dd+1), rep(1, dd+1), rep(0, dd+1))
+df$ArXiv = c(rep(0,dd+1), rep(0, dd+1), rep(1, dd+1))
+df$X2017 = df$X2018 = df$X2016
+m = cbind(predict(g2016, df), predict(g2017, df), predict(g2018, df))
+dimnames(m)[[2]] = 2016:2018
+cor(m)
+
+m = cbind(g2016$coef, g2017$coef, g2018$coef)
+dimnames(m)[[2]] = paste(2016:2018)
+d=dim(m)[1]
+
+
+d1 = sum(x2016$ACL)
+d2 = sum(x2016$PubMed)
+d3 = sum(x2016$ArXiv)
+
+d5 = sum(x2016$DBLP)
+d6 = sum(x2016$DOI)
+d7 = sum(x2016$MAG)
+
+# g2016 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed)^3 + factor(pmin(dd, X2016)), data = x2016, weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3)
+
+dd = 50
+
+g2016.0 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI)  + factor(pmin(dd, X2016)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+o=1
+ plot(1:dd, g2016.0$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o, main="Published in 2016")
+ f=sort(g2016.0$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+
+o=2
+g2016.1 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+ points(1:dd, g2016.1$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2016.1$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+o=3
+g2016.1 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+ points(1:dd, g2016.1$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2016.1$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+
+
+dd=10
+o=1
+  g2017.1 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ plot(1:dd, g2017.1$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o, main="Published in 2017", xlab="Citations in 2017", ylab="Coefficient")
+ f=sort(g2017.1$coef[1:6])
+ text((1:6)*1, f, names(f), col=o)
+
+
+o=2
+g2017.2 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.2$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.2$coef[1:6])
+ text((1:6)*1, f, names(f), col=o)
+
+o=3
+g2017.3 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.3$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.3$coef[1:6])
+ text((1:6)*1, f, names(f), col=o)
+
+m = cbind(g2017.1$coef,  g2017.2$coef,  g2017.3$coef)
+dimnames(m)[[2]] = paste(2017:2019)
+m
+
+
+
+
+
+
+par(mfrow=c(1,1))
+dd=50
+k=floor(dd/6)
+o=1
+  g2017.1 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ plot(1:dd, g2017.1$coef[7:(dd+6)], type='b', ylim=100*c(0,0.8), pch=paste(o), col=o, main="Published in 2017", xlab="Citations in 2017", ylab="Coefficient")
+ f=sort(g2017.1$coef[1:6])
+ text((1:6)*k, f, names(f), col=o)
+
+
+o=2
+g2017.2 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.2$coef[7:(dd+6)], type='b', ylim=100*c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.2$coef[1:6])
+ text((1:6)*k, f, names(f), col=o)
+
+o=3
+g2017.3 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.3$coef[7:(dd+6)], type='b', ylim=100*c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.3$coef[1:6])
+ text((1:6)*k, f, names(f), col=o)
+
+m = cbind(g2017.1$coef,  g2017.2$coef,  g2017.3$coef)
+dimnames(m)[[2]] = paste(2017:2019)
+m
+
+#######
+
+d1 = sum(x2017$ACL)
+d2 = sum(x2017$PubMed)
+d3 = sum(x2017$ArXiv)
+
+d5 = sum(x2017$DBLP)
+d6 = sum(x2017$DOI)
+d7 = sum(x2017$MAG)
+
+w = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3 + x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7
+
+dd=10
+  g2017.1 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)) + poly(log(pmax(1, X2017)),5), data = x2017, weights = w)
+
+  g2017.2 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)) + poly(log(pmax(1, X2018)),5), data = x2017, weights = w)
+
+  g2017.3 = glm(100*nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)) + poly(log(pmax(1, X2019)),5), data = x2017, weights = w)
+
+m = cbind(g2017.1$coef,  g2017.2$coef,  g2017.3$coef)
+dimnames(m)[[2]] = paste(2017:2019)
+m
+
+
+#######
+
+d1 = sum(x2018$ACL)
+d2 = sum(x2018$PubMed)
+d3 = sum(x2018$ArXiv)
+
+d5 = sum(x2018$DBLP)
+d6 = sum(x2018$DOI)
+d7 = sum(x2018$MAG)
+
+w = x2018$ACL/d1 + x2018$PubMed/d2 + x2018$ArXiv/d3 + x2018$DBLP/d5 + x2018$DOI/d6 + x2018$MAG/d7
+
+dd=10
+  g2018.1 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)) + poly(log(pmax(1, X2018)),5), data = x2018, weights = w)
+
+  g2018.2 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)) + poly(log(pmax(1, X2019)),5), data = x2018, weights = w)
+
+  g2018.3 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2020)) + poly(log(pmax(1, X2020)),5), data = x2018, weights = w)
+
+m = cbind(g2018.1$coef,  g2018.2$coef,  g2018.3$coef)
+dimnames(m)[[2]] = paste(2018:2020)
+m
+
+dd=10
+  g2016.1 = glm(100*nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2016)) + poly(log(pmax(1, X2016)),5), data = x2016, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3 + x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+  g2018.2 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)) + poly(log(pmax(1, X2019)),5), data = x2018, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+  g2018.3 = glm(100*nrank(X2022) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2020)) + poly(log(pmax(1, X2020)),5), data = x2018, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+m = cbind(g2018.1$coef,  g2018.2$coef,  g2018.3$coef)
+dimnames(m)[[2]] = paste(2018:2020)
+m
+
+
+
+jpeg("to_go/predict_citations.jpg", pointsize=42, quality=100, width=480*3, height=480*3)
+par(mfrow=c(2,3))
+s = x2017$X2017 > 0
+plot(((x2017$X2017)[s]), (g2017.1$fitted.values[s]), col=1, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2017", ylab="Predicted Percentile in 2021", log="x", main="Published in 2017")
+s = x2017$X2018 > 0
+plot(((x2017$X2018)[s]), (g2017.2$fitted.values[s]), col=2, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2018", ylab="Predicted Percentile in 2021", log="x", main="Published in 2017")
+s = x2017$X2019 > 0
+plot(((x2017$X2019)[s]), (g2017.3$fitted.values[s]), col=3, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2019", ylab="Predicted Percentile in 2021", log="x", main="Published in 2017")
+
+s = x2018$X2018 > 0
+plot(((x2018$X2018)[s]), (g2018.1$fitted.values[s]), col=1, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2018", ylab="Predicted Percentile in 2022", log="x", main="Published in 2018")
+s = x2018$X2019 > 0
+plot(((x2018$X2019)[s]), (g2018.2$fitted.values[s]), col=2, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2019", ylab="Predicted Percentile in 2022", log="x", main="Published in 2018")
+s = x2018$X2020 > 0
+plot((x2018$X2020)[s], g2018.3$fitted.values[s], col=3, xlim=c(1,1000), ylim=c(20,115), xlab="Citations in 2020", ylab="Predicted Percentile in 2022", log="x", main="Published in 2018")
+dev.off()
+
+
+
+
+par(mfrow=c(1,3))
+s = x2017$X2017 > 0
+plot(jitter(pmin(dd, x2017$X2017)[s]), 100*jitter(g2017.1$fitted.values[s]), pch='.', col=1, ylim=c(20,110), xlab="Citations in 2017", ylab="Predicted Percentile in 2021", log="x")
+s = x2017$X2018 > 0
+plot(jitter(pmin(dd, x2017$X2018)[s]), 100*jitter(g2017.2$fitted.values[s]), pch='.', col=2, ylim=c(20,110), xlab="Citations in 2018", ylab="Predicted Percentile in 2021", log="x")
+s = x2017$X2019 > 0
+plot(jitter(pmin(dd, x2017$X2019)[s]), 100*jitter(g2017.3$fitted.values[s]), pch='.', col=3, ylim=c(20,110), xlab="Citations in 2019", ylab="Predicted Percentile in 2021", log="x")
+
+o=1
+  g2017.1 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ plot(1:dd, g2017.1$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o, main="Published in 2017", xlab="Citations in 2017", ylab="Coefficient")
+ f=sort(g2017.1$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+
+o=2
+g2017.2 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.2$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.2$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+o=3
+g2017.3 = glm(nrank(X2021) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2017, 
+weights = x2017$ACL/d1 + x2017$PubMed/d2 + x2017$ArXiv/d3
+	+ x2017$DBLP/d5 + x2017$DOI/d6 + x2017$MAG/d7)
+
+ points(1:dd, g2017.3$coef[7:(dd+6)], type='b', ylim=c(0,0.8), pch=paste(o), col=o)
+ f=sort(g2017.3$coef[1:6])
+ text((1:6)*4, f, names(f), col=o)
+
+
+
+
+
+g2016b = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+points(1:dd, g2016b$coef[(1+5):(dd+5)], type='b', col="red")
+ nf=6
+ f=sort(g2016b$coef[1:nf])
+ text((1:length(f))*10, f, names(f), col="red")
+
+g2016.3 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+points(1:dd, g2016.3$coef[(1+5):(dd+5)], type='b', col=3, pch=paste(3))
+ nf=6
+ f=sort(g2016.3$coef[1:nf])
+ text((1:length(f))*10, f, names(f), col=3)
+
+
+g2016.3 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2018)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+points(1:dd, g2016.0$coef[(1+5):(dd+5)], type='b', col="red")
+ nf=6
+ f=sort(g2016.0$coef[1:nf])
+ text((1:length(f))*10, f, names(f), col="red")
+
+g2016.4 = glm(nrank(X2020) ~ (ACL + ArXiv + PubMed + DBLP + DOI) + factor(pmin(dd, X2019)), data = x2016, 
+weights = x2016$ACL/d1 + x2016$PubMed/d2 + x2016$ArXiv/d3
+	+ x2016$DBLP/d5 + x2016$DOI/d6 + x2016$MAG/d7)
+
+points(1:dd, g2016.4$coef[(1+5):(dd+5)], type='b', pch=paste(4), col=4)
+ nf=6
+ f=sort(g2016.0$coef[1:nf])
+ text((1:length(f))*10, f, names(f), col=4)
+
+
+
+
+s = x2016$ArXiv > 0
+g2016 = glm(nrank(X2020) ~ (ACL + PubMed + DBLP + DOI) + factor(pmin(dd, X2017)), data = x2016[s,])
+ plot(1:dd, g2016$coef[(1+5):(dd+5)], type='b', ylim=c(0,0.8))
+ nf=5
+ f=sort(g2016$coef[1:nf])
+ text((1:length(f))*10, f, names(f))
+
+
+
+
+
+# # Rules of Thumb
+# To predict citations in 4th year after publication,
+# (1) More citations in 1st year are better
+# (2) Publishing in PubMed is worth more than ACL, and ACL is worth more than ArXiv
+# (3) PubMed is worth about 2 citations in first year; ACL is worth about one in first year; ArXiv is worth about 1/2 in first year
+
+plot(c(0,10), range(m), type='n', xlab="Citations in 1st Year after Publication", ylab="Citations in 4th Year after Publication")
+for(i in 1:3) { df = data.frame(x = as.vector(1:(d-4)), y= as.vector(m[5:d,i])); 
+g = glm(y ~ poly(x, 4), data=df); 
+lines(0:d, predict(g, data.frame(x=0:d)), col="red")}
+for(i in 1:3) lines(1:(d-4), m[5:d,i], type='b', pch=paste(5+i))
+for(i in 1:3) text(2, m["ACL",i], "ACL")
+for(i in 1:3) text(3, m["PubMed",i], "PubMed")
+for(i in 1:3) text(2, m["ArXiv",i], "ArXiv")
+
+
+plot((1+c(0,d)), range(m), type='n', xlab="Citations in 1st Year after Publication", ylab="Citations in 4th Year after Publication", log="x")
+# for(i in 1:3) { df = data.frame(x = as.vector(1:(d-4)), y= as.vector(m[5:d,i])); 
+# g = glm(y ~ poly(x, 4), data=df); 
+# lines(0:d, predict(g, data.frame(x=0:d)), col="red")}
+for(i in 1:3) lines((1+(1:(d-4))), (m[5:d,i]), type='b', pch=paste(5+i))
+for(i in 1:3) text((1+1), (m["ACL",i]), "ACL")
+for(i in 1:3) text((1+2), (m["PubMed",i]), "PubMed")
+for(i in 1:3) text((1+0.5), (m["ArXiv",i]), "ArXiv")
+
+
+m = cbind(g2016$coef, g2017$coef, g2018$coef)
+dimnames(m)[[2]] = 2016:2018
+
+cor(m)
+      2016  2017  2018
+2016 1.000 0.998 0.991
+2017 0.998 1.000 0.998
+2018 0.991 0.998 1.000
+
+m
+                          2016   2017   2018
+(Intercept)             0.2667 0.2787 0.2970
+ACL                     0.0952 0.1022 0.1126
+ArXiv                   0.0738 0.0531 0.0461
+PubMed                  0.1680 0.1597 0.1456
+factor(pmin(9, X2016))1 0.0905 0.0817 0.0728
+factor(pmin(9, X2016))2 0.1739 0.1607 0.1520
+factor(pmin(9, X2016))3 0.2394 0.2264 0.2131
+factor(pmin(9, X2016))4 0.2915 0.2780 0.2675
+factor(pmin(9, X2016))5 0.3350 0.3218 0.3104
+factor(pmin(9, X2016))6 0.3742 0.3572 0.3493
+factor(pmin(9, X2016))7 0.4033 0.3859 0.3800
+factor(pmin(9, X2016))8 0.4261 0.4111 0.4015
+factor(pmin(9, X2016))9 0.4842 0.4806 0.4757
+
+
+
+glm(formula = rank(X2020)/dim(x)[1] ~ ACL + ArXiv + PubMed + 
+    factor(pmin(9, X2016)), data = x2016)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-0.88448  -0.22207   0.01898   0.21479   0.65930  
+
+Coefficients:
+                         Estimate Std. Error t value Pr(>|t|)    
+(Intercept)             0.2666892  0.0027155   98.21   <2e-16 ***
+ACL                     0.0951739  0.0048952   19.44   <2e-16 ***
+ArXiv                   0.0738017  0.0025670   28.75   <2e-16 ***
+PubMed                  0.1679965  0.0026980   62.27   <2e-16 ***
+factor(pmin(9, X2016))1 0.0905287  0.0006432  140.74   <2e-16 ***
+factor(pmin(9, X2016))2 0.1738801  0.0008970  193.84   <2e-16 ***
+factor(pmin(9, X2016))3 0.2393903  0.0012103  197.79   <2e-16 ***
+factor(pmin(9, X2016))4 0.2914709  0.0015838  184.03   <2e-16 ***
+factor(pmin(9, X2016))5 0.3349878  0.0020150  166.24   <2e-16 ***
+factor(pmin(9, X2016))6 0.3742147  0.0025267  148.11   <2e-16 ***
+factor(pmin(9, X2016))7 0.4033030  0.0030942  130.34   <2e-16 ***
+factor(pmin(9, X2016))8 0.4260665  0.0036901  115.46   <2e-16 ***
+factor(pmin(9, X2016))9 0.4841917  0.0019784  244.74   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 0.06868058)
+
+    Null deviance: 91646  on 1121080  degrees of freedom
+Residual deviance: 76996  on 1121068  degrees of freedom
+AIC: 178926
+
+Number of Fisher Scoring iterations: 2
+
+Call:
+glm(formula = rank(X2020) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2016)), data = x2016)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-991575  -248956    21283   240796   739131  
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               298980       3044    98.2   <2e-16 ***
+ACL                       106698       5488    19.4   <2e-16 ***
+ArXiv                      82738       2878    28.8   <2e-16 ***
+PubMed                    188338       3025    62.3   <2e-16 ***
+factor(pmin(9, X2016))1   101490        721   140.7   <2e-16 ***
+factor(pmin(9, X2016))2   194934       1006   193.8   <2e-16 ***
+factor(pmin(9, X2016))3   268376       1357   197.8   <2e-16 ***
+factor(pmin(9, X2016))4   326762       1776   184.0   <2e-16 ***
+factor(pmin(9, X2016))5   375548       2259   166.2   <2e-16 ***
+factor(pmin(9, X2016))6   419525       2833   148.1   <2e-16 ***
+factor(pmin(9, X2016))7   452135       3469   130.3   <2e-16 ***
+factor(pmin(9, X2016))8   477655       4137   115.5   <2e-16 ***
+factor(pmin(9, X2016))9   542818       2218   244.7   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 8.63e+10)
+
+    Null deviance: 1.1518e+17  on 1121080  degrees of freedom
+Residual deviance: 9.6770e+16  on 1121068  degrees of freedom
+AIC: 31411803
+
+Number of Fisher Scoring iterations: 2
+
+Replication for 2017 (instead of 2016)
+
+summary(g)
+
+Call:
+glm(formula = rank(X2021) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2017)), data = x2017)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1015816   -246131     33829    252881    787476  
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               328637       3097   106.1   <2e-16 ***
+ACL                       120564       6110    19.7   <2e-16 ***
+ArXiv                      62622       2929    21.4   <2e-16 ***
+PubMed                    188319       3077    61.2   <2e-16 ***
+factor(pmin(9, X2017))1    96282        741   130.0   <2e-16 ***
+factor(pmin(9, X2017))2   189524       1028   184.4   <2e-16 ***
+factor(pmin(9, X2017))3   267019       1383   193.1   <2e-16 ***
+factor(pmin(9, X2017))4   327778       1800   182.1   <2e-16 ***
+factor(pmin(9, X2017))5   379415       2275   166.8   <2e-16 ***
+factor(pmin(9, X2017))6   421246       2839   148.4   <2e-16 ***
+factor(pmin(9, X2017))7   455076       3440   132.3   <2e-16 ***
+factor(pmin(9, X2017))8   484766       4090   118.5   <2e-16 ***
+factor(pmin(9, X2017))9   566707       2193   258.4   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 9.59e+10)
+
+    Null deviance: 1.3382e+17  on 1179151  degrees of freedom
+Residual deviance: 1.1311e+17  on 1179139  degrees of freedom
+AIC: 33163287
+
+Number of Fisher Scoring iterations: 2
+
+Replication for 2018
+
+
+Call:
+glm(formula = rank(X2022) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2018)), data = x2018)
+
+Deviance Residuals: 
+     Min        1Q    Median        3Q       Max  
+-1032212   -271364     -4765    228247    804440  
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               363648       3059   118.9   <2e-16 ***
+ACL                       137831       5394    25.6   <2e-16 ***
+ArXiv                      56395       2897    19.5   <2e-16 ***
+PubMed                    178274       3039    58.6   <2e-16 ***
+factor(pmin(9, X2018))1    89180        754   118.3   <2e-16 ***
+factor(pmin(9, X2018))2   186165       1054   176.6   <2e-16 ***
+factor(pmin(9, X2018))3   260951       1422   183.5   <2e-16 ***
+factor(pmin(9, X2018))4   327571       1861   176.0   <2e-16 ***
+factor(pmin(9, X2018))5   380152       2354   161.5   <2e-16 ***
+factor(pmin(9, X2018))6   427691       2898   147.6   <2e-16 ***
+factor(pmin(9, X2018))7   465310       3533   131.7   <2e-16 ***
+factor(pmin(9, X2018))8   491655       4234   116.1   <2e-16 ***
+factor(pmin(9, X2018))9   582573       2233   260.9   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 1.04e+11)
+
+    Null deviance: 1.4915e+17  on 1224589  degrees of freedom
+Residual deviance: 1.2764e+17  on 1224577  degrees of freedom
+AIC: 34542930
+
+Number of Fisher Scoring iterations: 2
+
+
+
+Call:
+glm(formula = rank(X2014) ~ ACL + ArXiv + PubMed + factor(pmin(9, X2010)), data = x2010)
+
+Deviance Residuals: 
+    Min       1Q   Median       3Q      Max  
+-649520  -184154    27087   168577   558821  
+
+Coefficients:
+                        Estimate Std. Error t value Pr(>|t|)    
+(Intercept)               218167       3010    72.5   <2e-16 ***
+ACL                        66944       5009    13.4   <2e-16 ***
+ArXiv                      32332       2875    11.2   <2e-16 ***
+PubMed                    132769       2995    44.3   <2e-16 ***
+factor(pmin(9, X2010))1    94668        613   154.4   <2e-16 ***
+factor(pmin(9, X2010))2   163310        872   187.3   <2e-16 ***
+factor(pmin(9, X2010))3   214883       1197   179.5   <2e-16 ***
+factor(pmin(9, X2010))4   261237       1579   165.4   <2e-16 ***
+factor(pmin(9, X2010))5   291924       2038   143.2   <2e-16 ***
+factor(pmin(9, X2010))6   317056       2554   124.1   <2e-16 ***
+factor(pmin(9, X2010))7   341670       3137   108.9   <2e-16 ***
+factor(pmin(9, X2010))8   353722       3798    93.1   <2e-16 ***
+factor(pmin(9, X2010))9   399542       2007   199.1   <2e-16 ***
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+(Dispersion parameter for gaussian family taken to be 4.4e+10)
+
+    Null deviance: 4.3185e+16  on 809669  degrees of freedom
+Residual deviance: 3.5633e+16  on 809657  degrees of freedom
+AIC: 22140886
+
+Number of Fisher Scoring iterations: 2
+

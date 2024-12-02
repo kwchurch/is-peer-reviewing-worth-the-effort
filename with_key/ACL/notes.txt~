@@ -1,0 +1,4 @@
+for f in ACL.2???.summary
+do
+awk 'BEGIN{while(getline < "ACL_id" > 0) ACL[$1]=substr($2,5,1)}; NR == 1 {print "Anthology\t" $0; next}; $1 in ACL {print ACL[$1] "\t" $0}' $f > "$f"2
+done
